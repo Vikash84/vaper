@@ -46,9 +46,20 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { PREPARE_REFS                } from '../modules/local/prepare_refs'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { FASTP                       } from '../modules/nf-core/fastp/main'
+include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
+include { SRA_HUMAN_SCRUBBER          } from '../modules/local/sra-human-scrubber'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+
+//
+// SUBWORKFLOWS
+//
+include { CLASSIFY_VIRUSES } from '../subworkflows/local/classify-viruses'
+include { CREATE_CONSENSUS } from '../subworkflows/local/create-consensus'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,12 +86,65 @@ workflow WAPHLVIRAL {
     // ! There is currently no tooling to help you write a sample sheet schema
 
     //
+    // MODULE: Prepapre references
+    //
+    PREPARE_REFS (
+        params.refs
+    )
+
+    //
     // MODULE: Run FastQC
     //
     FASTQC (
         INPUT_CHECK.out.reads
     )
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    //
+    // MODULE: Run Fastp
+    //
+    FASTP (
+        INPUT_CHECK.out.reads,
+        [],
+        false,
+        false
+    )
+
+    //
+    // MODULE: Convert Fastp summary to table format
+    //
+    FASTP2TBL (
+        FASTP.out.json
+    )
+
+    //
+    // MODULE: Run SRA Human Scubber
+    //
+    //SRA_HUMAN_SCRUBBER (
+    //    FASTP.out.reads
+    //)
+
+    //
+    // SUBWORKFLOW: Classify viruses
+    //
+    CLASSIFY_VIRUSES (
+        FASTP.out.reads,
+        PREPARE_REFS.out.refs
+    )
+
+    //
+    // SUBWORKFLOW: Create consensus assemblies
+    //
+    CLASSIFY_VIRUSES
+        .out
+        .ref_list
+        .filter{ meta, ref, reads -> ref != null }
+        .set{ ref_list } 
+
+    CREATE_CONSENSUS (
+        ref_list,
+        params.refs
+    )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
