@@ -1,7 +1,7 @@
 process COMBINE_SUMMARYLINES {
     label 'process_low'
 
-    container "docker://jdj0303/waphl-viral-r:1.0.0"
+    container "docker://jdj0303/waphl-viral-base:1.0.0"
 
     input:
     path summaries

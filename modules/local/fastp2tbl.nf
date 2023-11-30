@@ -1,6 +1,8 @@
 process FASTP2TBL {
     label 'process_low'
 
+    container "docker://jdj0303/waphl-viral-base:1.0.0"
+
     input:
     tuple val(meta), path(fastp_json)
 

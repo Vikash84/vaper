@@ -1,6 +1,8 @@
 process SAMTOOLSTATS2TBL {
     label 'process_low'
 
+    dontainer "docker://jdj0303/waphl-viral-base:1.0.0"
+
     input:
     tuple val(meta), path(stats)
 
