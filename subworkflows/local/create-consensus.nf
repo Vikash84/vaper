@@ -2,8 +2,9 @@
 // Check input samplesheet and get read channels
 //
 
-include { BWA_MEM as BWA_MEM               } from '../../modules/local/bwa_mem'
-include { IVAR_CONSENSUS as IVAR_CONSENSUS } from '../../modules/local/ivar_consensus'
+include { BWA_MEM          } from '../../modules/local/bwa_mem'
+include { SAMTOOLSTATS2TBL } from '../../modules/local/samtoolstats2tbl'
+include { IVAR_CONSENSUS   } from '../../modules/local/ivar_consensus'
 
 
 workflow CREATE_CONSENSUS {
@@ -24,9 +25,20 @@ workflow CREATE_CONSENSUS {
     )
 
     //
+    // MODULE: Summarize Samtool stats
+    //
+    SAMTOOLSTATS2TBL (
+        BWA_MEM.out.stats
+    )
+
+    //
     // MODULE: Run Ivar
     //
     IVAR_CONSENSUS (
         BWA_MEM.out.bam
     )
+
+    emit:
+    samtoolstats2tbl = SAMTOOLSTATS2TBL.out.tbl   // channel: [ val(meta), path(stats_table)) ]
+    assembly_stats = IVAR_CONSENSUS.out.stats
 }

@@ -50,6 +50,8 @@ include { PREPARE_REFS                } from '../modules/local/prepare_refs'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FASTP                       } from '../modules/nf-core/fastp/main'
 include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
+include { SUMMARYLINE                 } from '../modules/local/create-summaryline'
+include { COMBINE_SUMMARYLINES        } from '../modules/local/combine-summary'
 include { SRA_HUMAN_SCRUBBER          } from '../modules/local/sra-human-scrubber'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -144,6 +146,50 @@ workflow WAPHLVIRAL {
     CREATE_CONSENSUS (
         ref_list,
         params.refs
+    )
+
+    //
+    // MODULE: Create summaryline for each sample
+    //
+    FASTP2TBL.out.tbl.map{ meta, fastp2tbl -> [meta, fastp2tbl] }.set{ fastp2tbl }
+    CLASSIFY_VIRUSES.out.k2_summary.map{ meta, k2_summary -> [meta, k2_summary] }.set{ k2_summary }
+    CREATE_CONSENSUS.out.samtoolstats2tbl.map{ meta, samtoolstats2tbl -> [meta, samtoolstats2tbl] }.set{ samtoolstats2tbl }
+    CREATE_CONSENSUS.out.assembly_stats.map{ meta, assembly_stats -> [meta, assembly_stats] }.set{ assembly_stats }
+
+    ref_list
+        .map{ meta, ref, reads -> [meta, ref] }
+        .join(k2_summary, by: 0)
+        .join(samtoolstats2tbl, by: 0)
+        .join(assembly_stats, by: 0)
+        .join(fastp2tbl, by: 0)
+        .set{ assembly_list }
+
+    CLASSIFY_VIRUSES
+        .out
+        .ref_list
+        .filter{ meta, ref, reads -> ref == null }
+        .map{ meta, ref, reads -> [meta, "NA"] }
+        .join( k2_summary, by: 0 )
+        .map{ meta, ref, k2_summary -> [ meta, ref, k2_summary, [], [] ] }
+        .join(fastp2tbl, by: 0)
+        .set{ no_assembly_list }
+
+    assembly_list
+      .concat(no_assembly_list)
+      .set{ all_list }
+
+    //
+    // MODULE: Create summaryline for each sample
+    //
+    SUMMARYLINE (
+       all_list
+    )
+
+    //
+    // MODULE: Combine summarylines
+    //
+    COMBINE_SUMMARYLINES (
+        SUMMARYLINE.out.summaryline.map{ meta, summaryline -> [summaryline] }.collect()
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

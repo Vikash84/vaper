@@ -2,10 +2,10 @@
 // Check input samplesheet and get read channels
 //
 
-include { SHOVILL as SHOVILL               } from '../../modules/nf-core/shovill/main'
-include { KRAKEN2 as KRAKEN2               } from '../../modules/local/kraken2'
-include { MINIMAP2_ALIGN as MINIMAP2       } from '../../modules/nf-core/minimap2/align/main'
-include { SUMMARIZE_TAXA as SUMMARIZE_TAXA } from '../../modules/local/summarize_taxa'
+include { SHOVILL        } from '../../modules/nf-core/shovill/main'
+include { KRAKEN2        } from '../../modules/local/kraken2'
+include { MINIMAP2_ALIGN } from '../../modules/nf-core/minimap2/align/main'
+include { SUMMARIZE_TAXA } from '../../modules/local/summarize_taxa'
 
 
 workflow CLASSIFY_VIRUSES {
@@ -36,7 +36,7 @@ workflow CLASSIFY_VIRUSES {
     //
     // MODULE: Map contigs to the references
     //
-    MINIMAP2 (
+    MINIMAP2_ALIGN (
         SHOVILL.out.contigs,
         refs.map{ refs -> ["reference",refs] },
         false,
@@ -52,7 +52,7 @@ workflow CLASSIFY_VIRUSES {
         .output
         .map{ meta, output, cov -> [meta, output, cov] }
         .set{ k2_output }
-    MINIMAP2
+    MINIMAP2_ALIGN
         .out
         .paf
         .map{ meta, paf -> [meta, paf] }
@@ -73,5 +73,6 @@ workflow CLASSIFY_VIRUSES {
 
     emit:
     ref_list   // channel: [ val(meta), val(reference), path(reads) ]
+    k2_summary = SUMMARIZE_TAXA.out.k2_summary
     versions = SHOVILL.out.versions // channel: [ versions.yml ]
 }

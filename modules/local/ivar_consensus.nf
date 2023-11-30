@@ -10,6 +10,7 @@ process IVAR_CONSENSUS {
 
     output:
     tuple val(meta), path('*.fa'), emit: consensus
+    tuple val(meta), path('*.csv'), emit: stats
     path "versions.yml",           emit: versions
 
     when:
@@ -25,6 +26,9 @@ process IVAR_CONSENSUS {
 
     # create mpilup and call consensus
     samtools mpileup -aa -A -Q 0 -d 0 ${bam} | ivar consensus -p ${prefix}-${ref} -m 10 -n N -t 0.5
+
+    # gather stats
+    assembly-stats.sh ${prefix}-${ref}.fa > ${prefix}-${ref}.assembly-stats.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

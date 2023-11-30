@@ -13,9 +13,8 @@ process BWA_MEM {
 
     output:
     tuple val(meta), path('*.bam'), val(ref), emit: bam
-    tuple val(meta), path('*.txt'),           emit: coverage_detail
-    tuple val(meta), path('*.txt'),           emit: coverage_summary
-
+    tuple val(meta), path('*.coverage.txt'),  emit: coverage
+    tuple val(meta), path('*.stats.txt'),     emit: stats
 
     path "versions.yml", emit: versions
 
@@ -42,9 +41,9 @@ process BWA_MEM {
     bwa mem -t 3 refs/*/${ref} ${reads[0]} ${reads[1]} | samtools view -b -F 4 - | samtools sort - > ${prefix}-${ref}.bam
 
     # gather read stats
-    samtools coverage ${prefix}-${ref}.bam > ${prefix}-${ref}.coverage-detail.txt
-    tail -n+2 ${prefix}-${ref}.coverage-detail.txt | awk 'BEGIN {OFS = ","} {tot_reads+=$4; cov_sum+=$6; depth_sum+=$7; baseq_sum+=$8; mapq_sum+=$9; n++ } END{ if (n > 0) print tot_reads,cov_sum/n,depth_sum/n,baseq_sum/n,mapq_sum/n;}' > ${prefix}-${ref}.coverage-summary.csv
-
+    samtools coverage ${prefix}-${ref}.bam > ${prefix}-${ref}.coverage.txt
+    samtools stats ${prefix}-${ref}.bam > ${prefix}-${ref}.stats.txt
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bwa-mem: \$(bwa 2>&1 | grep "Version" | cut -f 2 -d ' ')
