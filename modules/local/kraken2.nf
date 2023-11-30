@@ -9,7 +9,7 @@ process KRAKEN2 {
 
     input:
     tuple val(meta), path(contigs)
-    path  db
+    path  db_tar
 
     output:
     tuple val(meta), path('*report.txt'),                            emit: report
@@ -24,9 +24,12 @@ process KRAKEN2 {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
+    # extract Kraken2 database
+    mkdir k2_db
+    tar -xzvhf ${db_tar} -C k2_db
     # run Kraken2
     kraken2 \\
-        --db $db \\
+        --db k2_db \\
         --threads $task.cpus \\
         --report ${prefix}.k2.report.txt \\
         --output ${prefix}.k2.output.txt \\

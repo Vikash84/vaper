@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -42,6 +45,70 @@
                 }
             }
         },
+        "assembly_options": {
+            "title": "Assembly options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "refs": {
+                    "type": "string",
+                    "description": "Path to compressed directory containing reference assemblies. File must be tar.gz compressed (e.g., tar czvf refs.tar.gz refs/)",
+                    "pattern": "^\\S+\\.tar.gz",
+                    "format": "file-path"
+                },
+                "gen_frac": {
+                    "type": "number",
+                    "default": 0.75,
+                    "description": "Minimum genome fraction for an assembly to be created"
+                }
+            },
+            "required": [
+                "refs"
+            ]
+        },
+        "taxonomy_options": {
+            "title": "Taxonomy options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "k2db": {
+                    "type": "string",
+                    "description": "Path to compressed Kraken2 viral RefSeq database.",
+                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20231009.tar.gz",
+                    "pattern": "^\\S+\\.tar.gz",
+                    "format": "file-path"
+                },
+                "assembler": {
+                    "type": "string",
+                    "default": "skesa",
+                    "description": "Assembler to use for Shovill (skesa, spades, velvet, or megahit)"
+                },
+                "min_contig_cov": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Minimum contig coverage for Shovill"
+                },
+                "min_contig_len": {
+                    "type": "integer",
+                    "default": 300,
+                    "description": "Minimum contig length for Shovill"
+                },
+                "gsize": {
+                    "type": "string",
+                    "default": "1.0M",
+                    "description": "Approx. genome size for Shovill"
+                },
+                "ncbi_assembly_stats": {
+                    "type": "string",
+                    "default": "${baseDir}/assets/databases/NCBI_Assembly_stats_2023-11-29.txt",
+                    "description": "Path to NCBI genome assembly statistics",
+                    "pattern": "^\\S+\\.txt",
+                    "format": "file-path"
+                }
+            }
+        },
         "reference_genome_options": {
             "title": "Reference genome options",
             "type": "object",
@@ -52,7 +119,8 @@
                     "type": "string",
                     "description": "Name of iGenomes reference.",
                     "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
+                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
+                    "hidden": true
                 },
                 "fasta": {
                     "type": "string",
@@ -62,7 +130,8 @@
                     "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                     "description": "Path to FASTA genome file.",
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
+                    "fa_icon": "far fa-file-code",
+                    "hidden": true
                 },
                 "igenomes_ignore": {
                     "type": "boolean",
@@ -181,7 +250,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -271,6 +347,12 @@
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
+        },
+        {
+            "$ref": "#/definitions/assembly_options"
+        },
+        {
+            "$ref": "#/definitions/taxonomy_options"
         },
         {
             "$ref": "#/definitions/reference_genome_options"
