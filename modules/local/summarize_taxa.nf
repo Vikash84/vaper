@@ -2,7 +2,7 @@ process SUMMARIZE_TAXA {
     tag "$meta.id"
     label 'process_low'
 
-    container "jdj0303/waphl-viral-base:1.0.0"
+    container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
     tuple val(meta), path(paf), path(k2_output), path(contig_cov)

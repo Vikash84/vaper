@@ -2,7 +2,7 @@ process SUMMARYLINE {
     tag "$meta.id"
     label 'process_low'
 
-    container "jdj0303/waphl-viral-base:1.0.0"
+    container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
     tuple val(meta), val(ref), path(k2_summary), path(samtoolstats2tbl), path(assembly_stats), path(fastp2tbl)
