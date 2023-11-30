@@ -33,7 +33,9 @@ df.k2 <- read_tsv(k2_output, col_names = F) %>%
 df.ncbi <- read_tsv(ncbi_stats) %>%
   select(TaxID, `Size (Kb)`) %>%
   rename(TAXID = TaxID, 
-         REF_LENGTH = `Size (Kb)`)
+         LENGTH = `Size (Kb)`) %>%
+  group_by(TAXID) %>%
+  summarize(REF_LENGTH = mean(LENGTH))
 
 # combine all datastreams together
 df.k2 %>%
