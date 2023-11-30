@@ -6,6 +6,7 @@ process SUMMARIZE_TAXA {
 
     input:
     tuple val(meta), path(paf), path(k2_output), path(contig_cov)
+    path ncbi_assembly_stats
 
     output:
     tuple val(meta), path("*.k2-summary.csv"),  emit: k2_summary
@@ -19,7 +20,7 @@ process SUMMARIZE_TAXA {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # summarize kraken2 output
-    k2_summary.R ${k2_output} ${contig_cov} ${prefix} ${params.ncbi_assembly_stats}
+    k2_summary.R ${k2_output} ${contig_cov} ${prefix} ${ncbi_assembly_stats}
     # select references for consensus assembly generation
     if [ -s ${paf} ]
     then
