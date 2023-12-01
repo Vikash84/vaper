@@ -15,6 +15,7 @@ process BWA_MEM {
     tuple val(meta), path('*.bam'), val(ref), emit: bam
     tuple val(meta), path('*.coverage.txt'),  emit: coverage
     tuple val(meta), path('*.stats.txt'),     emit: stats
+    tuple val(meta), path("*.read-list.txt"), emit: read_list
 
     path "versions.yml", emit: versions
 
@@ -38,11 +39,14 @@ process BWA_MEM {
     bwa index refs/*/${ref}
 
     # run bwa mem, select only mapped reads, convert to .bam, and sort
-    bwa mem -t 3 refs/*/${ref} ${reads[0]} ${reads[1]} | samtools view -b -F 4 - | samtools sort - > ${prefix}-${ref}.bam
+    bwa mem -t ${task.cpus} refs/*/${ref} ${reads[0]} ${reads[1]} | samtools view -b -F 4 - | samtools sort - > ${prefix}-${ref}.bam
 
     # gather read stats
     samtools coverage ${prefix}-${ref}.bam > ${prefix}-${ref}.coverage.txt
-    samtools stats ${prefix}-${ref}.bam > ${prefix}-${ref}.stats.txt
+    samtools stats --threads ${task.cpus} ${prefix}-${ref}.bam > ${prefix}-${ref}.stats.txt
+
+    # get list of read headers for fastq extraction
+    samtools view ${prefix}-${ref}.bam | cut -f 1 | sort | uniq > ${prefix}-${ref}.read-list.txt
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
