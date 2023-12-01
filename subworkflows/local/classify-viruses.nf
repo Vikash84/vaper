@@ -60,7 +60,8 @@ workflow CLASSIFY_VIRUSES {
         .set{ taxa_files }
 
     SUMMARIZE_TAXA (
-        taxa_files
+        taxa_files,
+        params.ncbi_assembly_stats
     )
 
     SUMMARIZE_TAXA
