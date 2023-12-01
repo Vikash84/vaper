@@ -20,7 +20,8 @@ df.summaryline <- cbind(df.summaryline, df.fastp2tbl)
 
 #----- Kraken2 Summary -----#
 # load summary
-df.k2 <- read.csv(k2_summary)
+df.k2 <- read.csv(k2_summary) %>%
+  arrange(desc(EST_PER_ABUND))
 # determine main taxa - i.e., those present at >= 1% relative abundance
 main_taxa <- df.k2 %>%
   filter(EST_PER_ABUND >= 1) %>%
@@ -32,7 +33,7 @@ other_taxa <- df.k2 %>%
   .$TAXA %>%
   paste(collapse = "; ")
 # combine into a table
-df.k2_main_other <- data.frame(MAIN_TAXA = main_taxa, OTHER_TAXA = other_taxa)
+df.k2_main_other <- data.frame(MAIN_TAXA_KRAKEN2 = main_taxa, OTHER_TAXA_KRAKEN2 = other_taxa)
 df.summaryline <- cbind(df.summaryline, df.k2_main_other)
 
 #----- Mapped Reads Stats -----#
