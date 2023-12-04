@@ -10,7 +10,7 @@ process SUMMARIZE_TAXA {
 
     output:
     tuple val(meta), path("*.k2-summary.csv"),  emit: k2_summary
-    tuple val(meta), path("*.ref-summary.csv"), emit: ref_summary
+    tuple val(meta), path("*.ref-summary.csv"), emit: ref_summary, optional: true
     tuple val(meta), path("*.ref-list.csv"),    emit: ref_list
 
     when:
@@ -22,11 +22,13 @@ process SUMMARIZE_TAXA {
     # summarize kraken2 output
     k2_summary.R ${k2_output} ${contig_cov} ${prefix} ${ncbi_assembly_stats}
     # select references for consensus assembly generation
+    ## check if the alignment file is empty
     if [ -s ${paf} ]
     then
         refs_summary.R ${paf} ${prefix} ${params.gen_frac}
     else
-        touch ${prefix}.ref-summary.csv ${prefix}.ref-list.csv
+        echo "none_selected" > ${prefix}.ref-list.csv
     fi
+
     """
 }

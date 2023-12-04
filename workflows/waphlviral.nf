@@ -137,10 +137,11 @@ workflow WAPHLVIRAL {
     //
     // SUBWORKFLOW: Create consensus assemblies
     //
+    // Filter out samples that had no references selected
     CLASSIFY_VIRUSES
         .out
         .ref_list
-        .filter{ meta, ref, reads -> ref != null }
+        .filter{ meta, ref, reads -> ref != "none_selected" }
         .set{ ref_list } 
 
     CREATE_CONSENSUS (
@@ -151,45 +152,50 @@ workflow WAPHLVIRAL {
     //
     // MODULE: Create summaryline for each sample
     //
+    // Combine outputs of samples that had references
     FASTP2TBL.out.tbl.map{ meta, fastp2tbl -> [meta, fastp2tbl] }.set{ fastp2tbl }
     CLASSIFY_VIRUSES.out.k2_summary.map{ meta, k2_summary -> [meta, k2_summary] }.set{ k2_summary }
-    CREATE_CONSENSUS.out.samtoolstats2tbl.map{ meta, samtoolstats2tbl -> [meta, samtoolstats2tbl] }.set{ samtoolstats2tbl }
-    CREATE_CONSENSUS.out.assembly_stats.map{ meta, assembly_stats -> [meta, assembly_stats] }.set{ assembly_stats }
+    CREATE_CONSENSUS.out.samtoolstats2tbl.map{ meta, ref, samtoolstats2tbl -> [meta, ref, samtoolstats2tbl] }.set{ samtoolstats2tbl }
+    CREATE_CONSENSUS.out.assembly_stats.map{ meta, ref, assembly_stats -> [meta, ref, assembly_stats] }.set{ assembly_stats }
 
     ref_list
         .map{ meta, ref, reads -> [meta, ref] }
-        .join(k2_summary, by: 0)
-        .join(samtoolstats2tbl, by: 0)
-        .join(assembly_stats, by: 0)
-        .join(fastp2tbl, by: 0)
+        .combine(fastp2tbl, by: 0)
+        .combine(k2_summary, by: 0)
+        .join(samtoolstats2tbl, by: [0,1])
+        .join(assembly_stats, by: [0,1])
         .set{ assembly_list }
 
+    // Build channel with empty positions for samples that didn't have a reference
     CLASSIFY_VIRUSES
         .out
         .ref_list
-        .filter{ meta, ref, reads -> ref == null }
+        .filter{ meta, ref, reads -> ref == "none_selected" }
         .map{ meta, ref, reads -> [meta, "NA"] }
-        .join( k2_summary, by: 0 )
-        .map{ meta, ref, k2_summary -> [ meta, ref, k2_summary, [], [] ] }
         .join(fastp2tbl, by: 0)
+        .join( k2_summary, by: 0 )
+        .map{ meta, ref, fastp2tbl, k2_summary -> [ meta, ref, fastp2tbl, k2_summary, [], [] ] }
         .set{ no_assembly_list }
 
+    // Combine the reference and non-reference channels
     assembly_list
       .concat(no_assembly_list)
       .set{ all_list }
 
-    //
-    // MODULE: Create summaryline for each sample
-    //
+    // check for reference metadata
+    refs_meta = params.refs_meta ? params.refs_meta : []
+
     SUMMARYLINE (
-       all_list
+       all_list,
+       refs_meta
     )
 
     //
     // MODULE: Combine summarylines
     //
+    SUMMARYLINE.out.summaryline.map{ meta, summaryline -> [summaryline] }.collect().set{ all_summaries }
     COMBINE_SUMMARYLINES (
-        SUMMARYLINE.out.summaryline.map{ meta, summaryline -> [summaryline] }.collect()
+        all_summaries
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

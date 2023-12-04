@@ -4,10 +4,10 @@ process SAMTOOLSTATS2TBL {
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
-    tuple val(meta), path(stats)
+    tuple val(meta), val(ref), path(stats)
 
     output:
-    tuple val(meta), path("*.csv"), emit: tbl
+    tuple val(meta), val(ref), path("*.csv"), emit: tbl
 
     when:
     task.ext.when == null || task.ext.when

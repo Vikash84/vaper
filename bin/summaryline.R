@@ -18,9 +18,16 @@ samtoolstats2tbl <- args[3]
 assembly_stats <- args[4]
 sample <- args[5]
 ref <- args[6]
+refs_meta <- args[7]
 
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref)
+
+#----- Add reference metadata -----#
+if(file.exists(refs_meta)){
+  df.refs_meta <- read.csv(refs_meta)
+  df.summaryline <- merge(df.summaryline, df.refs_meta, by = "REFERENCE", all.x = T)
+}
 
 #----- Full Read Stats -----#
 df.fastp2tbl <- read_csv(fastp2tbl)
@@ -56,6 +63,11 @@ if(file.exists(assembly_stats)){
 }
 
 #----- Create Summaryline -----#
-df.summaryline <- df.summaryline %>% 
-      rename_with(toupper)
+# make ID always show up first
+column.names <- df.summaryline %>% 
+  select(-ID) %>%
+  colnames()
+df.summaryline <- df.summaryline %>%
+  select(ID, column.names) %>%
+  rename_with(toupper)
 write.csv(x=df.summaryline, file = "summaryline.csv", quote = F, row.names = F)

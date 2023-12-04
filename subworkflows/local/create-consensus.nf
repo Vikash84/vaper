@@ -36,7 +36,7 @@ workflow CREATE_CONSENSUS {
     // MODULE: Convert mapped reads to FASTQ
     //
     MAPPED_FASTQ (
-        BWA_MEM.out.read_list.map{meta, read_list -> [meta, read_list] }.join(ref_list, by: 0)
+        BWA_MEM.out.read_list.map{meta, ref, read_list -> [meta, ref, read_list] }.join(ref_list, by: [0,1])
     )
 
     //
@@ -47,6 +47,6 @@ workflow CREATE_CONSENSUS {
     )
 
     emit:
-    samtoolstats2tbl = SAMTOOLSTATS2TBL.out.tbl   // channel: [ val(meta), path(stats_table)) ]
-    assembly_stats = IVAR_CONSENSUS.out.stats
+    samtoolstats2tbl = SAMTOOLSTATS2TBL.out.tbl // channel: [ val(meta), val(ref), path(stats)) ]
+    assembly_stats = IVAR_CONSENSUS.out.stats   // channel: [ val(meta), val(ref), path(stats)) ]
 }

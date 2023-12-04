@@ -69,7 +69,7 @@ workflow CLASSIFY_VIRUSES {
         .ref_list
         .splitCsv(header: false)
         .map{ meta, ref -> [meta, ref.get(0)] }
-        .join(reads.map{ meta, reads -> [meta, reads] }, by: 0, remainder: true)
+        .combine(reads.map{ meta, reads -> [meta, reads] }, by: 0)
         .set{ ref_list }
 
     emit:

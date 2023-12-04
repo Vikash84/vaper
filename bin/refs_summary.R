@@ -41,6 +41,9 @@ align.summary <- paf %>%
 ref.list <- align.summary %>%
   subset(GENOME_FRAC > gen_frac) %>%
   select(ASSEMBLY)
+if(nrow(ref.list) == 0){
+  ref.list <- data.frame(ASSEMBLY = "none_selected")
+}
 
 # write outputs
 write.table(x= align.summary, file = paste0(sample,".ref-summary.csv"), quote = F, sep = ",", row.names = F)

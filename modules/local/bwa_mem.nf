@@ -12,10 +12,10 @@ process BWA_MEM {
     path  refs_tar
 
     output:
-    tuple val(meta), path('*.bam'), val(ref), emit: bam
-    tuple val(meta), path('*.coverage.txt'),  emit: coverage
-    tuple val(meta), path('*.stats.txt'),     emit: stats
-    tuple val(meta), path("*.read-list.txt"), emit: read_list
+    tuple val(meta), val(ref), path('*.bam'),           emit: bam
+    tuple val(meta), val(ref), path('*.coverage.txt'),  emit: coverage
+    tuple val(meta), val(ref), path('*.stats.txt'),     emit: stats
+    tuple val(meta), val(ref), path("*.read-list.txt"), emit: read_list
 
     path "versions.yml", emit: versions
 

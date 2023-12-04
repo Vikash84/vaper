@@ -6,11 +6,11 @@ process IVAR_CONSENSUS {
     container "staphb/ivar:1.3.1-titan"
 
     input:
-    tuple val(meta), path(bam), val(ref)
+    tuple val(meta), val(ref), path(bam)
 
     output:
-    tuple val(meta), path('*.fa'), emit: consensus
-    tuple val(meta), path('*.csv'), emit: stats
+    tuple val(meta), val(ref), path('*.fa'), emit: consensus
+    tuple val(meta), val(ref), path('*.csv'), emit: stats
     path "versions.yml",           emit: versions
 
     when:
