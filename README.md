@@ -12,7 +12,7 @@
 
 ## Introduction
 
-**VAPER: Viral Assembly from Probe-based EnRichment**
+**VAPER: Viral Assembly from Probe-based EnRichment** \
 VAPER creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) sequence data. One strength is that it can handle samples containing multiple viral species and/or variants. In the case that multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the user defined threshold (default: 70%). To ensure all relevant species are captured, VAPER also supplies a summary of all viral sequences in the sample using Kraken2.
 
 ## Usage
