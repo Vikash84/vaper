@@ -13,7 +13,7 @@ def summary_params = paramsSummaryMap(workflow)
 // Print parameter summary log to screen
 log.info logo + paramsSummaryLog(workflow) + citation
 
-WorkflowWaphlviral.initialise(params, log)
+WorkflowVaper.initialise(params, log)
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +46,6 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { PREPARE_REFS                } from '../modules/local/prepare_refs'
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FASTP                       } from '../modules/nf-core/fastp/main'
 include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
@@ -72,7 +71,7 @@ include { CREATE_CONSENSUS } from '../subworkflows/local/create-consensus'
 // Info required for completion email and summary
 def multiqc_report = []
 
-workflow WAPHLVIRAL {
+workflow VAPER {
 
     ch_versions = Channel.empty()
 
@@ -86,13 +85,6 @@ workflow WAPHLVIRAL {
     // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
     // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
     // ! There is currently no tooling to help you write a sample sheet schema
-
-    //
-    // MODULE: Prepapre references
-    //
-    PREPARE_REFS (
-        params.refs
-    )
 
     //
     // MODULE: Run FastQC
@@ -130,8 +122,7 @@ workflow WAPHLVIRAL {
     // SUBWORKFLOW: Classify viruses
     //
     CLASSIFY_VIRUSES (
-        FASTP.out.reads,
-        PREPARE_REFS.out.refs
+        FASTP.out.reads
     )
 
     //
@@ -145,8 +136,7 @@ workflow WAPHLVIRAL {
         .set{ ref_list } 
 
     CREATE_CONSENSUS (
-        ref_list,
-        params.refs
+        ref_list    
     )
 
     //
@@ -205,10 +195,10 @@ workflow WAPHLVIRAL {
     //
     // MODULE: MultiQC
     //
-    workflow_summary    = WorkflowWaphlviral.paramsSummaryMultiqc(workflow, summary_params)
+    workflow_summary    = WorkflowVaper.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 
-    methods_description    = WorkflowWaphlviral.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
+    methods_description    = WorkflowVaper.methodsDescriptionText(workflow, ch_multiqc_custom_methods_description, params)
     ch_methods_description = Channel.value(methods_description)
 
     ch_multiqc_files = Channel.empty()

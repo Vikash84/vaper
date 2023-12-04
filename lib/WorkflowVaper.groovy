@@ -5,7 +5,7 @@
 import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
-class WorkflowWaphlviral {
+class WorkflowVaper {
 
     //
     // Check and validate parameters
@@ -14,10 +14,12 @@ class WorkflowWaphlviral {
 
         genomeExistsError(params, log)
 
+        if (!params.refs) {
+            Nextflow.error "No reference file was supplied. Please supply the path to a 'tar.gz' compressed directory containing reference fasta files using '--refs refs.tar.gz'. This file can be created using the command 'tar czvf refs.tar.gz refs' "
+        }
 
-        if (!params.fasta) {
-            //Nextflow.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
-            println("This is dumb")
+        if (!params.k2db) {
+            Nextflow.error "No Kraken2 database was supplied. Please supply the path to a Kraken2 viral reference database. This file must be 'tar.gz compressed. Reference database can be found at 'https://benlangmead.github.io/aws-indexes/k2'"
         }
     }
 

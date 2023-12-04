@@ -11,7 +11,6 @@ include { IVAR_CONSENSUS   } from '../../modules/local/ivar_consensus'
 workflow CREATE_CONSENSUS {
     take:
     ref_list // channel: [meta, ref, reads]
-    refs_tar  // channel: [refs_tar]
 
     main:
 
@@ -22,7 +21,7 @@ workflow CREATE_CONSENSUS {
     //
     BWA_MEM (
         ref_list,
-        refs_tar
+        params.refs
     )
 
     //

@@ -1,7 +1,7 @@
 //
 // Check input samplesheet and get read channels
 //
-
+include { PREPARE_REFS   } from '../../modules/local/prepare_refs'
 include { SHOVILL        } from '../../modules/nf-core/shovill/main'
 include { KRAKEN2        } from '../../modules/local/kraken2'
 include { MINIMAP2_ALIGN } from '../../modules/nf-core/minimap2/align/main'
@@ -11,11 +11,17 @@ include { SUMMARIZE_TAXA } from '../../modules/local/summarize_taxa'
 workflow CLASSIFY_VIRUSES {
     take:
     reads // channel: [meta, reads]
-    refs  // channel: [refs]
 
     main:
 
     ch_versions = Channel.empty()
+
+    //
+    // MODULE: Prepapre references
+    //
+    PREPARE_REFS (
+        params.refs
+    )
 
     //
     // MODULE: Run Shovill
@@ -38,7 +44,7 @@ workflow CLASSIFY_VIRUSES {
     //
     MINIMAP2_ALIGN (
         SHOVILL.out.contigs,
-        refs.map{ refs -> ["reference",refs] },
+        PREPARE_REFS.out.refs.map{ refs -> ["reference",refs] },
         false,
         false,
         false
