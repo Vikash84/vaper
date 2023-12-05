@@ -2,11 +2,12 @@
 // Check input samplesheet and get read channels
 //
 include { PREPARE_REFS   } from '../../modules/local/prepare_refs'
-include { SHOVILL        } from '../../modules/nf-core/shovill/main'
+include { SEQTK_SAMPLE   } from '../../modules/nf-core/seqtk/sample/main'
+include { FLASH          } from '../../modules/nf-core/flash/main'
+include { SPADES         } from '../../modules/local/spades'
 include { KRAKEN2        } from '../../modules/local/kraken2'
 include { MINIMAP2_ALIGN } from '../../modules/nf-core/minimap2/align/main'
 include { SUMMARIZE_TAXA } from '../../modules/local/summarize_taxa'
-
 
 workflow CLASSIFY_VIRUSES {
     take:
@@ -24,18 +25,35 @@ workflow CLASSIFY_VIRUSES {
     )
 
     //
-    // MODULE: Run Shovill
+    // MODULE: Downsample reads with Seqtk
     //
-    SHOVILL (
-        reads
+    SEQTK_SAMPLE (
+        reads.map{ meta, reads -> [ meta, reads, params.meta_depth ] }
     )
-    ch_versions = ch_versions.mix(SHOVILL.out.versions.first())
+
+    //
+    // MODULE: Merge paired-end reads using Flash
+    //
+    FLASH (
+        SEQTK_SAMPLE.out.reads
+    )
+
+    FLASH.out.reads
+
+
+    //
+    // MODULE: Create metagenomic assembly with MetaSPAdes
+    //
+    SPADES (
+        FLASH.out.reads
+
+    )
 
     //
     // MODULE: Run Kraken2
     //
     KRAKEN2 (
-        SHOVILL.out.contigs,
+        SPADES.out.contigs,
         params.k2db
     )
 
@@ -43,7 +61,7 @@ workflow CLASSIFY_VIRUSES {
     // MODULE: Map contigs to the references
     //
     MINIMAP2_ALIGN (
-        SHOVILL.out.contigs,
+        SPADES.out.contigs,
         PREPARE_REFS.out.refs.map{ refs -> ["reference",refs] },
         false,
         false,
@@ -56,7 +74,7 @@ workflow CLASSIFY_VIRUSES {
     KRAKEN2
         .out
         .output
-        .map{ meta, output, cov -> [meta, output, cov] }
+        .map{ meta, output -> [meta, output] }
         .set{ k2_output }
     MINIMAP2_ALIGN
         .out
@@ -81,5 +99,5 @@ workflow CLASSIFY_VIRUSES {
     emit:
     ref_list   // channel: [ val(meta), val(reference), path(reads) ]
     k2_summary = SUMMARIZE_TAXA.out.k2_summary
-    versions = SHOVILL.out.versions // channel: [ versions.yml ]
+    //versions = SHOVILL.out.versions // channel: [ versions.yml ]
 }

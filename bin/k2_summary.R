@@ -13,13 +13,9 @@ library(tidyr)
 # load args
 args <- commandArgs(trailingOnly=T)
 k2_output <- args[1]
-contig_cov <- args[2]
-sample <- args[3]
-ncbi_stats <- args[4]
+sample <- args[2]
+ncbi_stats <- args[3]
 
-# determine approx. percentages of each taxa observed and output as .tsv
-## load contig stats
-df.cov <- read.csv(contig_cov, col.names = c("CONTIG", "COVERAGE"))
 # load Kraken2 output
 df.k2 <- read_tsv(k2_output, col_names = F) %>%
   rename(STATUS = 1,
@@ -27,6 +23,7 @@ df.k2 <- read_tsv(k2_output, col_names = F) %>%
          TAXA_TAXID = 3,
          LENGTH = 4,
          LCA = 5) %>%
+  separate(col="CONTIG", sep = "_", into = c("LABEL1", "NODE", "LABEL2", "LENGTH_SP", "LABEL3","COVERAGE"), convert = T) %>%
   separate(col="TAXA_TAXID", sep = " \\(taxid ", into = c("TAXA", "TAXID")) %>%
   mutate(TAXID = gsub(TAXID, pattern = ")$", replacement = ""))
 # load NCBI stats
@@ -39,7 +36,6 @@ df.ncbi <- read_tsv(ncbi_stats) %>%
 
 # combine all datastreams together
 df.k2 %>%
-  merge(df.cov, by = "CONTIG") %>%
   merge(df.ncbi, by = "TAXID") %>%
   mutate(EST_READS=as.numeric(LENGTH)*as.numeric(COVERAGE)) %>%
   group_by(TAXA, TAXID, REF_LENGTH) %>%

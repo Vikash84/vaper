@@ -1,4 +1,5 @@
 process PREPARE_REFS {
+    tag "$refs_tar"
     label 'process_low'
 
     conda "bioconda::seqtk"

@@ -1,4 +1,5 @@
 process FASTP2TBL {
+    tag "${meta.id}"
     label 'process_low'
 
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
