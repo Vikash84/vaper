@@ -12,9 +12,9 @@ process KRAKEN2 {
     path  db_tar
 
     output:
-    tuple val(meta), path('*report.txt'), emit: report
-    tuple val(meta), path('*output.txt'), emit: output
-    path "versions.yml",                  emit: versions
+    tuple val(meta), path('*report.txt'),                            emit: report
+    tuple val(meta), path('*output.txt'), path('*cov.csv'), emit: output
+    path "versions.yml",                                             emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,6 +36,9 @@ process KRAKEN2 {
         --use-names \\
         $args \\
         $contigs
+
+    # create summary of contig stats from Shovill output
+    cat $contigs | grep ">" | tr -d '>' | cut -f 1,3 -d ' ' | sed 's/ ...=/,/g' > ${prefix}.cov.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
