@@ -13,7 +13,7 @@ process KRAKEN2 {
 
     output:
     tuple val(meta), path('*report.txt'),                            emit: report
-    tuple val(meta), path('*output.txt'), path('*cov.csv'), emit: output
+    tuple val(meta), path('*output.txt'), path('*cov.csv'),          emit: output
     path "versions.yml",                                             emit: versions
 
     when:

@@ -55,7 +55,7 @@ workflow CLASSIFY_VIRUSES {
     KRAKEN2
         .out
         .output
-        .map{ meta, output -> [meta, output] }
+        .map{ meta, output, cov -> [meta, output, cov] }
         .set{ k2_output }
     MINIMAP2_ALIGN
         .out
