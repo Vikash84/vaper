@@ -5,7 +5,7 @@ process SUMMARIZE_TAXA {
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
-    tuple val(meta), path(paf), path(k2_output)
+    tuple val(meta), path(paf), path(k2_output), path(contig_cov)
     path ncbi_assembly_stats
 
     output:
@@ -20,7 +20,7 @@ process SUMMARIZE_TAXA {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # summarize kraken2 output
-    k2_summary.R ${k2_output} ${prefix} ${ncbi_assembly_stats}
+    k2_summary.R ${k2_output} ${contig_cov} ${prefix} ${ncbi_assembly_stats}
     # select references for consensus assembly generation
     ## check if the alignment file is empty
     if [ -s ${paf} ]

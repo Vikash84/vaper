@@ -2,10 +2,8 @@
 // Check input samplesheet and get read channels
 //
 include { PREPARE_REFS   } from '../../modules/local/prepare_refs'
-include { SEQTK_SAMPLE   } from '../../modules/nf-core/seqtk/sample/main'
-include { FLASH          } from '../../modules/nf-core/flash/main'
-include { SPADES         } from '../../modules/local/spades'
 include { KRAKEN2        } from '../../modules/local/kraken2'
+include { SHOVILL        } from '../../modules/nf-core/shovill/main'
 include { MINIMAP2_ALIGN } from '../../modules/nf-core/minimap2/align/main'
 include { SUMMARIZE_TAXA } from '../../modules/local/summarize_taxa'
 
@@ -25,35 +23,18 @@ workflow CLASSIFY_VIRUSES {
     )
 
     //
-    // MODULE: Downsample reads with Seqtk
+    //MODULE: Run Shovill
     //
-    SEQTK_SAMPLE (
-        reads.map{ meta, reads -> [ meta, reads, params.meta_depth ] }
-    )
 
-    //
-    // MODULE: Merge paired-end reads using Flash
-    //
-    FLASH (
-        SEQTK_SAMPLE.out.reads
-    )
-
-    FLASH.out.reads
-
-
-    //
-    // MODULE: Create metagenomic assembly with MetaSPAdes
-    //
-    SPADES (
-        FLASH.out.reads
-
+    SHOVILL (
+        reads
     )
 
     //
     // MODULE: Run Kraken2
     //
     KRAKEN2 (
-        SPADES.out.contigs,
+        SHOVILL.out.contigs,
         params.k2db
     )
 
@@ -61,7 +42,7 @@ workflow CLASSIFY_VIRUSES {
     // MODULE: Map contigs to the references
     //
     MINIMAP2_ALIGN (
-        SPADES.out.contigs,
+        SHOVILL.out.contigs,
         PREPARE_REFS.out.refs.map{ refs -> ["reference",refs] },
         false,
         false,
