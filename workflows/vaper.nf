@@ -51,7 +51,6 @@ include { FASTP                       } from '../modules/nf-core/fastp/main'
 include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
 include { SUMMARYLINE                 } from '../modules/local/create-summaryline'
 include { COMBINE_SUMMARYLINES        } from '../modules/local/combine-summary'
-include { SRA_HUMAN_SCRUBBER          } from '../modules/local/sra-human-scrubber'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
