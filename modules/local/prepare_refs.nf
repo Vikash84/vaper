@@ -11,8 +11,9 @@ process PREPARE_REFS {
     path refs_tar
 
     output:
-    path "refs.fa",      emit: refs
-    path "versions.yml", emit: versions
+    path "refs.fa",       emit: refs
+    path "refs-comp.txt", emit: refs_comp
+    path "versions.yml",  emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,6 +33,9 @@ process PREPARE_REFS {
         seqtk rename tmp.fa \${ref##*/} >> refs.fa
     done
     rm tmp.fa
+
+    # get contig lengths
+    seqtk comp refs.fa > refs-comp.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

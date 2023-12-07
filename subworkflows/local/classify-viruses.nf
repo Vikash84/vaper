@@ -66,6 +66,7 @@ workflow CLASSIFY_VIRUSES {
 
     SUMMARIZE_TAXA (
         taxa_files,
+        PREPARE_REFS.out.refs_comp,
         params.ncbi_assembly_stats
     )
 

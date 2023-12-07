@@ -13,8 +13,9 @@ library(tidyr)
 # load args
 args <- commandArgs(trailingOnly=T)
 paf_file <- args[1]
-sample <- args[2]
-gen_frac <- args[3]
+refs_comp <- args[2]
+sample <- args[3]
+gen_frac <- args[4]
 
 # load alignment file
 paf <- read_tsv(paf_file, col_names = F) %>%
@@ -23,18 +24,19 @@ paf <- read_tsv(paf_file, col_names = F) %>%
          ALIGN = 11) %>%
   mutate(ASSEMBLY=gsub(CONTIG, pattern="[0-9]$",replacement=""))
 
-# sum alignments
-ref.summary <- paf %>% 
-  select(-ALIGN) %>%
-  unique() %>%
+# load reference contig lengths
+contig_lengths <- read_tsv(refs_comp) %>%
+  rename(CONTIG = 1,
+         LENGTH = 2) %>%
+  mutate(ASSEMBLY=gsub(CONTIG, pattern="[0-9]$",replacement="")) %>%
   group_by(ASSEMBLY) %>%
   summarise(TOT_LENGTH = sum(LENGTH))
 
-# sum assembly lengths
+# sum alignments
 align.summary <- paf %>%
   group_by(ASSEMBLY) %>%
   summarise(TOT_ALIGN = sum(ALIGN)) %>%
-  merge(ref.summary, by = "ASSEMBLY") %>%
+  merge(contig_lengths, by = "ASSEMBLY") %>%
   mutate(GENOME_FRAC = TOT_ALIGN / TOT_LENGTH)
 
 # select references

@@ -6,6 +6,7 @@ process SUMMARIZE_TAXA {
 
     input:
     tuple val(meta), path(paf), path(k2_output), path(contig_cov)
+    path refs_comp
     path ncbi_assembly_stats
 
     output:
@@ -25,7 +26,7 @@ process SUMMARIZE_TAXA {
     ## check if the alignment file is empty
     if [ -s ${paf} ]
     then
-        refs_summary.R ${paf} ${prefix} ${params.gen_frac}
+        refs_summary.R ${paf} ${refs_comp} ${prefix} ${params.gen_frac}
     else
         echo "none_selected" > ${prefix}.ref-list.csv
     fi
