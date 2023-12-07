@@ -10,9 +10,14 @@ library(readr)
 library(dplyr)
 library(tidyr)
 
-
+# get list of summary lines
 files <- list.files("./", pattern = ".csv", full.names = T)
-df <- do.call(bind_rows, lapply(files, FUN=read.csv)) %>%
-  mutate(ASSEMBLY_EST_DEPTH = BASES_MAPPED / ASSEMBLY_LENGTH)
-
+# combine all lines
+df <- do.call(bind_rows, lapply(files, FUN=read.csv))
+# calculate depth of coverage, if any of the samples mapped
+if("BASES_MAPPED" %in% colnames(df)){
+  df <- df %>%
+    mutate(ASSEMBLY_EST_DEPTH = BASES_MAPPED / ASSEMBLY_LENGTH)
+}
+# save combined summary
 write.csv(x=df, file="combined-summary.csv", quote = F, row.names = F)
