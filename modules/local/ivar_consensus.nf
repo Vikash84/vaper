@@ -25,7 +25,15 @@ process IVAR_CONSENSUS {
     set -euxo pipefail
 
     # create mpilup and call consensus
-    samtools mpileup -aa -A -Q 0 -d 0 ${bam} | ivar consensus -p ${prefix}-${ref} -m 10 -n N -t 0.5
+    samtools mpileup -aa -A -Q 0 -d 0 ${bam} | \\
+       ivar consensus \\
+       -p ${prefix}-${ref} \\
+       -m ${params.ivar_m} \\
+       -n ${params.ivar_n} \\
+       -t ${params.ivar_t} \\
+       -q ${params.ivar_q} \\
+       -c ${params.ivar_c} \\
+       ${args}
 
     # gather stats
     assembly-stats.sh ${prefix}-${ref}.fa > ${prefix}-${ref}.assembly-stats.csv
