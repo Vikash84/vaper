@@ -35,6 +35,11 @@
                         "git_sha": "d6549f46c3c1c3fe3def110f3d18059a68a65cc6",
                         "installed_by": ["modules"]
                     },
+                    "mafft": {
+                        "branch": "master",
+                        "git_sha": "c0a22acfb0accdf8ab3ea4f755a4865d538dc53f",
+                        "installed_by": ["modules"]
+                    },
                     "minimap2/align": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
@@ -61,6 +66,11 @@
                         "installed_by": ["modules"]
                     },
                     "shovill": {
+                        "branch": "master",
+                        "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
+                        "installed_by": ["modules"]
+                    },
+                    "snpsites": {
                         "branch": "master",
                         "git_sha": "3f5420aa22e00bd030a2556dfdffc9e164ec0ec5",
                         "installed_by": ["modules"]

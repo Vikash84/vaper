@@ -6,6 +6,8 @@ include { BWA_MEM          } from '../../modules/local/bwa_mem'
 include { SAMTOOLSTATS2TBL } from '../../modules/local/samtoolstats2tbl'
 include { MAPPED_FASTQ     } from '../../modules/local/get_mapped_fastq'
 include { IVAR_CONSENSUS   } from '../../modules/local/ivar_consensus'
+include { MAFFT            } from '../../modules/local/mafft'
+include { SNPSITES         } from '../../modules/local/snp-sites'
 
 
 workflow CREATE_CONSENSUS {
@@ -43,6 +45,21 @@ workflow CREATE_CONSENSUS {
     //
     IVAR_CONSENSUS (
         BWA_MEM.out.bam
+    )
+
+    //
+    // MODULE: Align reference to consensus using MAFFT
+    //
+    MAFFT (
+        IVAR_CONSENSUS.out.consensus,
+        params.refs
+    )
+
+    //
+    // MODULE: Get variant sites compared to reference
+    //
+    SNPSITES (
+        MAFFT.out.aln
     )
 
     emit:

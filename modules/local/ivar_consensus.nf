@@ -3,7 +3,7 @@ process IVAR_CONSENSUS {
     label 'process_high'
 
     conda "bioconda::ivar"
-    container "staphb/ivar:1.3.1-titan"
+    container "staphb/ivar:1.4.2"
 
     input:
     tuple val(meta), val(ref), path(bam)
@@ -32,7 +32,6 @@ process IVAR_CONSENSUS {
        -n ${params.ivar_n} \\
        -t ${params.ivar_t} \\
        -q ${params.ivar_q} \\
-       -c ${params.ivar_c} \\
        ${args}
 
     # gather stats
