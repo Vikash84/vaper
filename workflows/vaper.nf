@@ -146,6 +146,7 @@ workflow VAPER {
     CLASSIFY_VIRUSES.out.k2_summary.map{ meta, k2_summary -> [meta, k2_summary] }.set{ k2_summary }
     CREATE_CONSENSUS.out.samtoolstats2tbl.map{ meta, ref, samtoolstats2tbl -> [meta, ref, samtoolstats2tbl] }.set{ samtoolstats2tbl }
     CREATE_CONSENSUS.out.assembly_stats.map{ meta, ref, assembly_stats -> [meta, ref, assembly_stats] }.set{ assembly_stats }
+    CREATE_CONSENSUS.out.assembly_vcf.map{ meta, ref, vcf -> [meta, ref, vcf] }.set{ assembly_vcfs }
 
     ref_list
         .map{ meta, ref, reads -> [meta, ref] }
@@ -153,6 +154,7 @@ workflow VAPER {
         .combine(k2_summary, by: 0)
         .join(samtoolstats2tbl, by: [0,1])
         .join(assembly_stats, by: [0,1])
+        .join(assembly_vcfs, by: [0,1])
         .set{ assembly_list }
 
     // Build channel with empty positions for samples that didn't have a reference
@@ -163,7 +165,7 @@ workflow VAPER {
         .map{ meta, ref, reads -> [meta, "NA"] }
         .join(fastp2tbl, by: 0)
         .join( k2_summary, by: 0 )
-        .map{ meta, ref, fastp2tbl, k2_summary -> [ meta, ref, fastp2tbl, k2_summary, [], [] ] }
+        .map{ meta, ref, fastp2tbl, k2_summary -> [ meta, ref, fastp2tbl, k2_summary, [], [], [] ] }
         .set{ no_assembly_list }
 
     // Combine the reference and non-reference channels

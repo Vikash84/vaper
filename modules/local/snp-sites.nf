@@ -10,8 +10,8 @@ process SNPSITES {
     tuple val(meta), val(ref), path(aln)
 
     output:
-    path "*.vcf"        , emit: vcf
-    path "versions.yml" , emit: versions
+    tuple val(meta), val(ref), path("*.vcf"), emit: vcf
+    path "versions.yml" ,                     emit: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -10,6 +10,7 @@ samtoolstats2tbl <- args[3]
 assembly_stats <- args[4]
 sample <- args[5]
 ref <- args[6]
+snvs <- args[7]
 
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref)
@@ -40,13 +41,16 @@ df.summaryline <- cbind(df.summaryline, df.k2_main_other)
 if(file.exists(samtoolstats2tbl)){
   df.samtoolstats2tbl <- read.csv(samtoolstats2tbl)
   df.summaryline <- cbind(df.summaryline, df.samtoolstats2tbl)
-}
+}else(cat("\nNo mapping stats provided\n"))
 
 #----- Assembly Stats -----#
 if(file.exists(assembly_stats)){
-  df.assembly_stats <- read.csv(assembly_stats)
+  cat(snvs)
+  df.assembly_stats <- read.csv(assembly_stats) %>%
+    mutate(assembly_snvs = snvs,
+           assembly_nuc_id = (assembly_length - assembly_snvs) / assembly_length)
   df.summaryline <- cbind(df.summaryline, df.assembly_stats)
-}
+}else(cat("\nNo assembly stats provided\n"))
 
 #----- Create Summaryline -----#
 df.summaryline <- df.summaryline %>% 

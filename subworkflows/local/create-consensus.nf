@@ -64,5 +64,6 @@ workflow CREATE_CONSENSUS {
 
     emit:
     samtoolstats2tbl = SAMTOOLSTATS2TBL.out.tbl // channel: [ val(meta), val(ref), path(stats)) ]
-    assembly_stats = IVAR_CONSENSUS.out.stats   // channel: [ val(meta), val(ref), path(stats)) ]
+    assembly_stats   = IVAR_CONSENSUS.out.stats // channel: [ val(meta), val(ref), path(stats)) ]
+    assembly_vcf     = SNPSITES.out.vcf         // channel: [ val(meta), val(ref), path(vcf)) ]
 }
