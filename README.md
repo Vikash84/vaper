@@ -12,7 +12,7 @@
 
 ## Introduction
 
-**VAPER (Viral Assembly from Probe-based EnRichment)** creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) sequence data. One strength is that it can handle samples containing multiple viral species and/or variants. In the case that multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the user defined threshold (default: 70%). To ensure all relevant species are captured, VAPER also supplies a summary of all viral sequences in the sample using Kraken2.
+**VAPER (Viral Assembly from Probe-based EnRichment)** creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) sequence data. One strength is that it can handle samples containing multiple viral species and/or variants. In the case that multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the user defined threshold (default: 80%). To ensure all relevant species are captured, VAPER also supplies a summary of all viral sequences in the sample using Kraken2.
 
 ## Usage
 
@@ -22,31 +22,71 @@ to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/i
 with `-profile test` before running the workflow on actual data.
 :::
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
+### Step 1: Preparing your reference genomes
+VAPER creates assemblies using a consensus (i.e., reference-based) approach. As such, it is necessary to provide VAPER with appropriate references for each species/variant you intend to assemble. References are provided as individual FASTA files within a tar compressed directory. Assemblies created from references containing multiple contigs will be concatenated into a single contig. See instructions below for how prepare the reference directory.
 
-First, prepare a samplesheet with your input data that looks as follows:
+#### Gather all your reference genomes and place them into a single directory
+📂refs\
+ ┣ 📜sars-cov-2.fasta\
+ ┣ 📜mumps.fasta\
+ ┣ 📜measles.fasta\
+ ┣ 📜flu-a-h1n1.fasta\
+ ┣ 📜flu-a-h3n2.fasta\
+ ┗ 📜flu-b.fasta
 
+#### Compress the directory
+ ```
+ tar czvf refs.tar.gz refs/
+ ```
+#### Prepapre your reference metadata file (Optional)
+Metadata can be provided for each reference assembly. This data will be incorporated into the final report and is intended to aid interpretation. The `REFERENCE` column is the only required field. Otherwise, you can provide whatever fields/information you want. See an example below.
+`refs-meta.csv`:
+```csv
+REFERENCE,SPECIES,VARIANT
+sars-cov-2.fasta,Severe acute respiratory syndrome coronavirus 2,NA
+mumps.fasta,Mumps orthorubulavirus,NA
+measles.fasta,Measles Morbillivirus,NA
+flu-a-h1n1.fasta,Influenza A virus,H1N1
+flu-a-h3n2.fasta,Influenza A virus,H3N2
+flu-b.fasta,Influenza B virus,NA
+```
+
+### Step 2: Download the Kraken2 RefSeq viral database
+VAPER gives you a summary of all viral species in your sample, as determined via Kraken2 and the RefSeq viral database. This step is completely independent of consensus assembly generation and is only meant to ensure that you are capturing all relevant species in your sample. You can download the most recent version of the RefSeq viral database [here](https://benlangmead.github.io/aws-indexes/k2). An example of how to do this from the command-line is shown below:
+```bash
+wget https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20231009.tar.gz
+```
+
+### Step 2: Prepare your samplesheet
+VAPER takes a standard Nextflow samplesheet as input (see example below).
 `samplesheet.csv`:
 
 ```csv
 sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample01,sample01_R1_001.fastq.gz,sample01_R2_001.fastq.gz
+sample02,sample02_R1_001.fastq.gz,sample02_R2_001.fastq.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
--->
-
-Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
-
+### Step 3: Run VAPER
+Run VAPER using the command below, making adjustments where necessary.
 ```bash
 nextflow run DOH-JDJ0303/VAPER \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
+   --refs $PWD/refs.tar.gz \
+   --refs_meta $PWD/refs-meta.csv \
+   --k2db $PWD/k2_viral_20231009.tar.gz \
    --outdir <OUTDIR>
+```
+### Step 4: Fine tuning your assembly
+Adjust one or more of the options below to fine-tune your assembly.
+```
+options:
+--gen_frac        Minimum genome fraction for an assembly to be created (Default: 0.8)
+--assembler       Assembler to use for Shovill (skesa, spades, velvet, or megahit) (Default: spades)
+--min_contig_cov  Minimum contig coverage for Shovill (Default: 2)
+--min_contig_len  Minimum contig length for Shovill (Default: 100)
+--gsize           Approx. genome size for Shovill (Default: 1.0M)
 ```
 
 :::warning
@@ -55,13 +95,8 @@ provided by the `-c` Nextflow option can be used to provide any configuration _*
 see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 :::
 
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/waphlviral/usage) and the [parameter documentation](https://nf-co.re/waphlviral/parameters).
-
 ## Pipeline output
 
-To see the results of an example test run with a full size dataset refer to the [results](https://nf-co.re/waphlviral/results) tab on the nf-core website pipeline page.
-For more details about the output files and reports, please refer to the
-[output documentation](https://nf-co.re/waphlviral/output).
 
 ## Credits
 
