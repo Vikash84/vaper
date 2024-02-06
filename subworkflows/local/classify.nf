@@ -137,7 +137,7 @@ workflow CLASSIFY {
         .ref_list
         .splitCsv(header: false, elem: 1)
         .map{ meta, ref -> [ meta, file(ref.get(0)).baseName ] }
-        .join(ch_refs.map{ meta, ref -> [ meta.id, params.mode == "accurate" ? file(ref.get(0)).baseName : meta.id, ref] }, by: 1)
+        .combine(ch_refs.map{ meta, ref -> [ meta.id, params.mode == "accurate" ? file(ref).baseName : meta.id, ref ] }, by: 1)
         .map{ index, meta, ref_id, ref -> [ meta, ref_id, ref ] }
         .set{ ch_ref_list }
 
