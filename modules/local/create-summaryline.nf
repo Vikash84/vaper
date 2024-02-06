@@ -5,8 +5,7 @@ process SUMMARYLINE {
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
-    tuple val(meta), val(ref), path(fastp2tbl), path(k2_summary), path(samtoolstats2tbl), path(assembly_stats), path(vcf)
-    path refs_meta
+    tuple val(meta), val(ref_id), path(samtoolstats2tbl), path(assembly_stats), path(vcf), path(fastp2tbl), path(sm_summary)
 
     output:
     tuple val(meta), path("*.summaryline.csv"), emit: summaryline
@@ -18,7 +17,7 @@ process SUMMARYLINE {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # determine number of SNVs
-    if [ -f ${vcf} ]
+    if [ -f "${vcf}" ]
     then
         snvs=\$(cat ${vcf} | grep -v "#" | wc -l)
     else
@@ -26,8 +25,8 @@ process SUMMARYLINE {
     fi
 
     # create summaryline
-    summaryline.R "${fastp2tbl}" "${k2_summary}" "${samtoolstats2tbl}" "${assembly_stats}" "${prefix}" "${ref}" "${refs_meta}" \$(echo \$snvs)
+    summaryline.R "${fastp2tbl}" "${sm_summary}" "${samtoolstats2tbl}" "${assembly_stats}" "${prefix}" "${ref_id}"  "\$(echo \$snvs)"
     # rename using prefix and reference
-    mv summaryline.csv ${prefix}-${ref}.summaryline.csv
+    mv summaryline.csv "${prefix}-${ref_id}.summaryline.csv"
     """
 }

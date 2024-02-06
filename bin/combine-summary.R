@@ -12,6 +12,7 @@ library(tidyr)
 
 # get list of summary lines
 files <- list.files("./", pattern = ".csv", full.names = T)
+print(files)
 # combine all lines
 df <- do.call(bind_rows, lapply(files, FUN=read.csv))
 # calculate depth of coverage, if any of the samples mapped

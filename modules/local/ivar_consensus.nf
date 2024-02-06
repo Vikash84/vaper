@@ -6,12 +6,12 @@ process IVAR_CONSENSUS {
     container "staphb/ivar:1.4.2"
 
     input:
-    tuple val(meta), val(ref), path(bam)
+    tuple val(meta), val(ref_id), path(bam)
 
     output:
-    tuple val(meta), val(ref), path('*.fa'), emit: consensus
-    tuple val(meta), val(ref), path('*.csv'), emit: stats
-    path "versions.yml",           emit: versions
+    tuple val(meta), val(ref_id), path('*.fa'),  emit: consensus
+    tuple val(meta), val(ref_id), path('*.csv'), emit: stats
+    path "versions.yml",                         emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -27,7 +27,7 @@ process IVAR_CONSENSUS {
     # create mpilup and call consensus
     samtools mpileup -aa -A -Q 0 -d 0 ${bam} | \\
        ivar consensus \\
-       -p ${prefix}-${ref} \\
+       -p ${prefix}-${ref_id} \\
        -m ${params.ivar_m} \\
        -n ${params.ivar_n} \\
        -t ${params.ivar_t} \\
@@ -35,7 +35,7 @@ process IVAR_CONSENSUS {
        ${args}
 
     # gather stats
-    assembly-stats.sh ${prefix}-${ref}.fa > ${prefix}-${ref}.assembly-stats.csv
+    assembly-stats.sh ${prefix}-${ref_id}.fa > ${prefix}-${ref_id}.assembly-stats.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
