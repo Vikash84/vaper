@@ -10,7 +10,7 @@ process SUMMARIZE_TAXA {
 
     output:
     tuple val(meta), path("*.ref-summary.csv"), emit: ref_summary, optional: true
-    tuple val(meta), path("*.ref-list.csv"),    emit: ref_list, optional: true
+    tuple val(meta), path("*.ref-list.csv"),    emit: ref_list
     tuple val(meta), path("*.sm-summary.csv"),  emit: sm_summary
 
     when:
@@ -27,9 +27,11 @@ process SUMMARIZE_TAXA {
     fi
 
     #---- REFERENCE SELECTION: ACCURATE ----#
-    if [ "${params.mode}" == "accurate" && -s ${ref_info} ]
+    if [ "${params.mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
         ref-select_accurate.R ${ref_info} ${refs_comp} ${prefix} ${params.gen_frac}
+    else
+        touch ${prefix}.ref-list.csv        
     fi
 
     #---- TAXA SUMMARY ----#
