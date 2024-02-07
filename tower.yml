@@ -1,16 +1,16 @@
 reports:
   "**/software_versions.yml":
     display: "Software versions"
-  "VAPER-summary.csv"
+  "VAPER-summary.csv":
     display: "VAPER Summary"
-  "**/assembly/*.fa"
+  "**/assembly/*.fa":
     display: "Consensus Assembly"
-  "**/bam/*.bam"
+  "**/bam/*.bam":
     display: "Read alignment file"
-  "**/qc/*"
+  "**/qc/*":
     display: "Quality metrics"
-  "**/taxonomy/*"
+  "**/taxonomy/*":
     display: "Taxonomy files"
-  "**/reads/*"
+  "**/reads/*":
     display: "Reference-extracted reads"
 
