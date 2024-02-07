@@ -15,11 +15,9 @@ args <- commandArgs(trailingOnly=T)
 fastp2tbl <- args[1]
 sm_summary <- args[2]
 samtoolstats2tbl <- args[3]
-assembly_stats <- args[4]
+nextclade <- args[4]
 sample <- args[5]
 ref <- args[6]
-snvs <- args[7]
-
 
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref)
@@ -34,13 +32,25 @@ if(file.exists(samtoolstats2tbl)){
   df.summaryline <- cbind(df.summaryline, df.samtoolstats2tbl)
 }else(cat("\nNo mapping stats provided\n"))
 
-#----- Assembly Stats -----#
-if(file.exists(assembly_stats)){
-  cat(snvs)
-  df.assembly_stats <- read.csv(assembly_stats) %>%
-    mutate(assembly_snvs = as.numeric(snvs),
-           assembly_nuc_id = (assembly_length - assembly_snvs) / assembly_length)
-  df.summaryline <- cbind(df.summaryline, df.assembly_stats)
+#----- Nextclade -----#
+if(file.exists(nextclade)){
+  df.nextclade <- read_tsv(nextclade) %>%
+      select(qc.overallStatus,
+             totalSubstitutions,
+             totalDeletions,
+             totalInsertions,
+             totalFrameShifts,
+             totalNonACGTNs,
+             coverage,
+             ASSEMBLY_LENGTH) %>%
+      rename(ASSEMBLY_QC = qc.overallStatus,
+             ASSEMBLY_SUBS = totalSubstitutions,
+             ASSEMBLY_DEL = totalDeletions,
+             ASSEMBLY_INS = totalInsertions,
+             ASSEMBLY_FRAMESHIFTS = totalFrameShifts,
+             ASSEMBLY_NON_ATCG = totalNonACGTNs,
+             ASSEMBLY_GEN_FRAC = coverage)
+  df.summaryline <- cbind(df.summaryline, df.nextclade)
 }else(cat("\nNo assembly stats provided\n"))
 
 #---- Sourmash Species Summary ----#

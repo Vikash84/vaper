@@ -6,8 +6,7 @@ include { BWA_MEM          } from '../../modules/local/bwa_mem'
 include { SAMTOOLSTATS2TBL } from '../../modules/local/samtoolstats2tbl'
 include { MAPPED_FASTQ     } from '../../modules/local/get_mapped_fastq'
 include { IVAR_CONSENSUS   } from '../../modules/local/ivar_consensus'
-include { MAFFT            } from '../../modules/local/mafft'
-include { SNPSITES         } from '../../modules/local/snp-sites'
+include { NEXTCLADE_RUN    } from '../../modules/local/nexclade/run/main'
 
 
 workflow ASSEMBLE {
@@ -52,20 +51,18 @@ workflow ASSEMBLE {
     )
     ch_versions = ch_versions.mix(IVAR_CONSENSUS.out.versions.first())
 
-    // MODULE: Align reference to consensus using MAFFT
-    MAFFT (
-        IVAR_CONSENSUS.out.consensus.join(ref_list.map{ meta, ref_id, ref_path, reads -> [ meta, ref_id, ref_path ] }, by: [0,1])
+    /* 
+    =============================================================================================================================
+        ASSEMBLY QC METRICS
+    =============================================================================================================================
+    */
+    // MODULE: Run Nextclade
+    NEXTCLADE_RUN (
+        IVAR_CONSENSUS.out.consensus.join(ref_list.map{ meta, ref_id, ref_path, reads -> [ meta, ref_id, ref_path ] }, by: [0,1]),
+        file("${baseDir}/assets/nextclade-template.json", checkIfExists: true)
     )
-    ch_versions = ch_versions.mix(MAFFT.out.versions.first())
-
-    // MODULE: Get variant sites compared to reference
-    SNPSITES (
-        MAFFT.out.aln
-    )
-    ch_versions = ch_versions.mix(SNPSITES.out.versions.first())
 
     emit:
     samtoolstats2tbl = SAMTOOLSTATS2TBL.out.tbl // channel: [ val(meta), val(ref), path(stats)) ]
-    assembly_stats   = IVAR_CONSENSUS.out.stats // channel: [ val(meta), val(ref), path(stats)) ]
-    assembly_vcf     = SNPSITES.out.vcf         // channel: [ val(meta), val(ref), path(vcf)) ]
+    nextflow         = NEXTCLADE_RUN.out.tsv    // channel: [ val(meta), val(ref), path(stats)) ]
 }

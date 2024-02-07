@@ -11,7 +11,7 @@ process SUMMARIZE_TAXA {
     output:
     tuple val(meta), path("*.ref-summary.csv"), emit: ref_summary, optional: true
     tuple val(meta), path("*.ref-list.csv"),    emit: ref_list
-    tuple val(meta), path("*.sm-summary.csv"),  emit: sm_summary
+    tuple val(meta), path("*.taxa-summary.csv"),  emit: sm_summary
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,6 +36,6 @@ process SUMMARIZE_TAXA {
 
     #---- TAXA SUMMARY ----#
     # subset taxa with >= 10% abundance and 1X average coverage
-    zcat ${sm_gather} | awk -F ',' 'NR > 1 && \$3 >= 0.1 && \$6*2 >= 1 {print \$10" ("int(100*\$3)"%/"int(\$6*2)"X)"}' | tr -d '"' | tr '\n' ';' > ${prefix}.sm-summary.csv
+    zcat ${sm_gather} | awk -F ',' 'NR > 1 && \$3 >= 0.1 && \$6*2 >= 1 {print \$10" ("int(100*\$3)"%/"int(\$6*2)"X)"}' | tr -d '"' | tr '\n' ';' > ${prefix}.taxa-summary.csv
     """
 }

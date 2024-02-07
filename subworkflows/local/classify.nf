@@ -8,7 +8,6 @@ include { SOURMASH_SKETCH as SM_SKETCH_REF    } from '../../modules/nf-core/sour
 include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE } from '../../modules/nf-core/sourmash/sketch/main'
 include { SOURMASH_GATHER as SM_GATHER_SELECT } from '../../modules/nf-core/sourmash/gather/main'
 include { SOURMASH_GATHER as SM_GATHER_SAMPLE } from '../../modules/nf-core/sourmash/gather/main'
-include { SOURMASH_SEARCH as SM_SEARCH_REF    } from '../../modules/nf-core/sourmash/search/main'
 include { SUMMARIZE_TAXA                      } from '../../modules/local/summarize_taxa'
 
 workflow CLASSIFY {
@@ -41,12 +40,6 @@ workflow CLASSIFY {
         DETERMINE DOMINANT VIRAL TAXA
     =============================================================================================================================
     */
-
-    // MODULE: Classify each reference using Sourmash
-    //SM_SEARCH_REF (
-    //    SM_SKETCH_REF.out.signatures,
-    //    file(params.sm_db, checkIfExists: true)
-    //)
 
     // MODULE: Classify viral species in each sample using Sourmash
     SM_GATHER_SAMPLE (

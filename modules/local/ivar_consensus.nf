@@ -10,7 +10,6 @@ process IVAR_CONSENSUS {
 
     output:
     tuple val(meta), val(ref_id), path('*.fa'),  emit: consensus
-    tuple val(meta), val(ref_id), path('*.csv'), emit: stats
     path "versions.yml",                         emit: versions
 
     when:
@@ -33,9 +32,6 @@ process IVAR_CONSENSUS {
        -t ${params.ivar_t} \\
        -q ${params.ivar_q} \\
        ${args}
-
-    # gather stats
-    assembly-stats.sh ${prefix}-${ref_id}.fa > ${prefix}-${ref_id}.assembly-stats.csv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

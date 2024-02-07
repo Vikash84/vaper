@@ -1,7 +1,7 @@
-name: sourmash_gather
+name: nextclade_run
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::sourmash=4.8.4
+  - bioconda::nextclade=2.12.0

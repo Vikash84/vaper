@@ -150,13 +150,10 @@ workflow VAPER {
     */
 
     // Combine outputs of samples that had references
-    ASSEMBLE.out.samtoolstats2tbl.set{ samtoolstats2tbl }
-    ASSEMBLE.out.assembly_stats.set{ assembly_stats }
-    ASSEMBLE.out.assembly_vcf.set{ assembly_vcfs }
-
-    samtoolstats2tbl
-        .join(assembly_stats, by: [0,1])
-        .join(assembly_vcfs, by: [0,1])
+    ASSEMBLE
+        .out
+        .samtoolstats2tbl
+        .join(ASSEMBLE.out.nextflow, by: [0,1])
         .set{ ch_assembly_list }
 
     // Create channel of samples with no reference
@@ -166,7 +163,7 @@ workflow VAPER {
         .map{ meta, reads -> [ meta ] }
         .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }, by: 0, remainder: true)
         .filter{ meta, ref_id -> ref_id == null}
-        .map{ meta, ref_id -> [ meta, "No_Reference", [], [], [] ] }
+        .map{ meta, ref_id -> [ meta, "No_Reference", [], [] ] }
         .set{ ch_no_assembly_list }
 
     // Combine the reference and non-reference channels & add Fastp & Sourmash results
@@ -184,7 +181,12 @@ workflow VAPER {
     )
 
     // MODULE: Combine summarylines
-    SUMMARYLINE.out.summaryline.map{ meta, summaryline -> [ summaryline ] }.collect().set{ all_summaries }
+    SUMMARYLINE
+        .out
+        .summaryline
+        .map{ meta, summaryline -> [ summaryline ] }
+        .collect()
+        .set{ all_summaries }
     COMBINE_SUMMARYLINES (
         all_summaries
     )
