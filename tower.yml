@@ -1,5 +1,16 @@
 reports:
-  multiqc_report.html:
-    display: "MultiQC HTML report"
-  samplesheet.csv:
-    display: "Auto-created samplesheet with collated metadata and FASTQ paths"
+  "**/software_versions.yml":
+    display: "Software versions"
+  "VAPER-summary.csv":
+    display: "VAPER Summary"
+  "**/assembly/*.fa":
+    display: "Consensus Assembly"
+  "**/bam/*.bam":
+    display: "Read alignment file"
+  "**/qc/*":
+    display: "Quality metrics"
+  "**/taxonomy/*":
+    display: "Taxonomy files"
+  "**/reads/*":
+    display: "Reference-extracted reads"
+

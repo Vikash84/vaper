@@ -57,8 +57,8 @@ include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoft
 //
 // SUBWORKFLOWS
 //
-include { CLASSIFY_VIRUSES } from '../subworkflows/local/classify-viruses'
-include { CREATE_CONSENSUS } from '../subworkflows/local/create-consensus'
+include { CLASSIFY } from '../subworkflows/local/classify'
+include { ASSEMBLE } from '../subworkflows/local/assemble'
 
 
 /*
@@ -74,16 +74,24 @@ workflow VAPER {
 
     ch_versions = Channel.empty()
 
-    //
+    /* 
+    =============================================================================================================================
+        PREPARE INPUT
+    =============================================================================================================================
+    */ 
+
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
     INPUT_CHECK (
-        file(params.input)
+        file(params.input),
+        file(params.refs)
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-    // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
-    // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
-    // ! There is currently no tooling to help you write a sample sheet schema
+
+    /* 
+    =============================================================================================================================
+        QUALITY CONTROL: READS
+    =============================================================================================================================
+    */ 
 
     //
     // MODULE: Run FastQC
@@ -110,81 +118,75 @@ workflow VAPER {
         FASTP.out.json
     )
 
-    //
-    // MODULE: Run SRA Human Scubber
-    //
-    //SRA_HUMAN_SCRUBBER (
-    //    FASTP.out.reads
-    //)
+    /* 
+    =============================================================================================================================
+        CLASSIFY VIRUSES
+    =============================================================================================================================
+    */ 
 
     //
     // SUBWORKFLOW: Classify viruses
     //
-    CLASSIFY_VIRUSES (
-        FASTP.out.reads
+    CLASSIFY (
+        FASTP.out.reads,
+        INPUT_CHECK.out.refs
     )
 
-    //
+    /* 
+    =============================================================================================================================
+        ASSEMBLE VIRUSES
+    =============================================================================================================================
+    */
     // SUBWORKFLOW: Create consensus assemblies
-    //
-    // Filter out samples that had no references selected
-    CLASSIFY_VIRUSES
-        .out
-        .ref_list
-        .filter{ meta, ref, reads -> ref != "none_selected" }
-        .set{ ref_list } 
-
-    CREATE_CONSENSUS (
-        ref_list    
+    ASSEMBLE (
+        CLASSIFY.out.ref_list.combine(FASTP.out.reads, by: 0)
+    
     )
 
-    //
-    // MODULE: Create summaryline for each sample
-    //
+    /* 
+    =============================================================================================================================
+        SUMMARIZE RESULTS
+    =============================================================================================================================
+    */
+
     // Combine outputs of samples that had references
-    FASTP2TBL.out.tbl.map{ meta, fastp2tbl -> [meta, fastp2tbl] }.set{ fastp2tbl }
-    CLASSIFY_VIRUSES.out.k2_summary.map{ meta, k2_summary -> [meta, k2_summary] }.set{ k2_summary }
-    CREATE_CONSENSUS.out.samtoolstats2tbl.map{ meta, ref, samtoolstats2tbl -> [meta, ref, samtoolstats2tbl] }.set{ samtoolstats2tbl }
-    CREATE_CONSENSUS.out.assembly_stats.map{ meta, ref, assembly_stats -> [meta, ref, assembly_stats] }.set{ assembly_stats }
-    CREATE_CONSENSUS.out.assembly_vcf.map{ meta, ref, vcf -> [meta, ref, vcf] }.set{ assembly_vcfs }
-
-    ref_list
-        .map{ meta, ref, reads -> [meta, ref] }
-        .combine(fastp2tbl, by: 0)
-        .combine(k2_summary, by: 0)
-        .join(samtoolstats2tbl, by: [0,1])
-        .join(assembly_stats, by: [0,1])
-        .join(assembly_vcfs, by: [0,1])
-        .set{ assembly_list }
-
-    // Build channel with empty positions for samples that didn't have a reference
-    CLASSIFY_VIRUSES
+    ASSEMBLE
         .out
-        .ref_list
-        .filter{ meta, ref, reads -> ref == "none_selected" }
-        .map{ meta, ref, reads -> [meta, "NA"] }
-        .join(fastp2tbl, by: 0)
-        .join( k2_summary, by: 0 )
-        .map{ meta, ref, fastp2tbl, k2_summary -> [ meta, ref, fastp2tbl, k2_summary, [], [], [] ] }
-        .set{ no_assembly_list }
+        .samtoolstats2tbl
+        .join(ASSEMBLE.out.nextflow, by: [0,1])
+        .set{ ch_assembly_list }
 
-    // Combine the reference and non-reference channels
-    assembly_list
-      .concat(no_assembly_list)
+    // Create channel of samples with no reference
+    INPUT_CHECK
+        .out
+        .reads
+        .map{ meta, reads -> [ meta ] }
+        .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }, by: 0, remainder: true)
+        .filter{ meta, ref_id -> ref_id == null}
+        .map{ meta, ref_id -> [ meta, "No_Reference", [], [] ] }
+        .set{ ch_no_assembly_list }
+
+    // Combine the reference and non-reference channels & add Fastp & Sourmash results
+    FASTP2TBL.out.tbl.set{ fastp2tbl }
+    CLASSIFY.out.sm_summary.set{ sm_summary }
+    ch_assembly_list
+      .concat(ch_no_assembly_list)
+      .combine(fastp2tbl, by: 0)
+      .combine(sm_summary, by: 0)
       .set{ all_list }
 
-    // check for reference metadata
-    refs_meta = params.refs_meta ? params.refs_meta : []
-
+    // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list,
-       refs_meta
+       all_list
     )
 
-    //
     // MODULE: Combine summarylines
-    //
-    SUMMARYLINE.out.summaryline.map{ meta, summaryline -> [summaryline] }.collect().set{ all_summaries }
+    SUMMARYLINE
+        .out
+        .summaryline
+        .map{ meta, summaryline -> [ summaryline ] }
+        .collect()
+        .set{ all_summaries }
     COMBINE_SUMMARYLINES (
         all_summaries
     )
@@ -193,9 +195,13 @@ workflow VAPER {
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
-    //
+    /* 
+    =============================================================================================================================
+        DEFAULTS
+    =============================================================================================================================
+    */
+
     // MODULE: MultiQC
-    //
     workflow_summary    = WorkflowVaper.paramsSummaryMultiqc(workflow, summary_params)
     ch_workflow_summary = Channel.value(workflow_summary)
 

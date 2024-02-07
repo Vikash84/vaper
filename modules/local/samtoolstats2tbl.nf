@@ -5,10 +5,10 @@ process SAMTOOLSTATS2TBL {
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
     input:
-    tuple val(meta), val(ref), path(stats)
+    tuple val(meta), val(ref_id), path(stats)
 
     output:
-    tuple val(meta), val(ref), path("*.csv"), emit: tbl
+    tuple val(meta), val(ref_id), path("*.csv"), emit: tbl
 
     when:
     task.ext.when == null || task.ext.when
@@ -17,6 +17,6 @@ process SAMTOOLSTATS2TBL {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # convert Fastp read summary to table
-    samtoolstats2tbl.sh ${stats} > ${prefix}.samtoolstats2tbl.csv
+    samtoolstats2tbl.sh ${stats} > ${prefix}.${ref_id}.samtoolstats2tbl.csv
     """
 }

@@ -1,5 +1,5 @@
 process MAPPED_FASTQ {
-    tag "${meta.id}-${ref}"
+    tag "${meta.id}-${ref_id}"
     label 'process_single'
 
     conda "bioconda::seqtk=1.3"
@@ -8,7 +8,7 @@ process MAPPED_FASTQ {
         'biocontainers/seqtk:1.3--h5bf99c6_3' }"
 
     input:
-    tuple val(meta), val(ref), path(filter_list), path(reads)
+    tuple val(meta), val(ref_id), path(filter_list), path(reads)
 
     output:
     path "*.gz"         , emit: reads
@@ -28,7 +28,7 @@ process MAPPED_FASTQ {
         $args \\
         ${reads[0]} \\
         $filter_list | \\
-        gzip --no-name > ${prefix}-${ref}_R1.fastq.gz
+        gzip --no-name > ${prefix}-${ref_id}_R1.fastq.gz
 
     # reverse reads
     seqtk \\
@@ -36,7 +36,7 @@ process MAPPED_FASTQ {
         $args \\
         ${reads[0]} \\
         $filter_list | \\
-        gzip --no-name > ${prefix}-${ref}_R2.fastq.gz
+        gzip --no-name > ${prefix}-${ref_id}_R2.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

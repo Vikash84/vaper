@@ -8,12 +8,11 @@ process MAFFT {
         'biocontainers/mafft:7.520--h031d066_3' }"
 
     input:
-    tuple val(meta), val(ref), path(consensus)
-    path  refs_tar
+    tuple val(meta), val(ref_id), path(consensus), path(ref)
 
     output:
-    tuple val(meta), val(ref), path("comb.aln"), emit: aln
-    path "versions.yml"                        , emit: versions
+    tuple val(meta), val(ref_id), path("comb.aln"), emit: aln
+    path "versions.yml"                           , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,13 +21,8 @@ process MAFFT {
     def args         = task.ext.args   ?: ''
     def prefix       = task.ext.prefix ?: "${meta.id}"
     """
-    # extract references
-    mkdir refs
-    gzip -d ${refs_tar}
-    tar -xvhf *.tar -C refs
-
     # concat reference contigs and create multi-fasta with the consensus
-    echo ">Reference" > ref.fa && cat refs/*/${ref} | grep -v ">" | tr -d '\t\n\r ' >> ref.fa && echo "\n" >> ref.fa
+    echo ">Reference" > ref.fa && cat ${ref} | grep -v ">" | tr -d '\t\n\r ' >> ref.fa && echo "\n" >> ref.fa
     cat ref.fa ${consensus} > comb.fa
 
     mafft \\

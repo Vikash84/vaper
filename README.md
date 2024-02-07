@@ -8,11 +8,9 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/DOH-JDJ0303/VAPER)
 
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23waphlviral-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/waphlviral)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
-
 ## Introduction
 
-**VAPER (Viral Assembly from Probe-based EnRichment)** creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) sequence data. One strength is that it can handle samples containing multiple viral species and/or variants. In the case that multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the user defined threshold (default: 80%). To ensure all relevant species are captured, VAPER also supplies a summary of all viral sequences in the sample using Kraken2.
+**VAPER (Viral Assembly from Probe-based EnRichment)** creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) sequence data. One strength is that it can handle samples containing multiple viral species and/or variants. When multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the user defined threshold (default: 70%). To ensure all relevant species are captured, VAPER also supplies a summary of all viral sequences in the sample using [Sourmash](https://github.com/sourmash-bio/sourmash).
 
 ## Usage
 
@@ -23,38 +21,23 @@ with `-profile test` before running the workflow on actual data.
 :::
 
 ### Step 1: Preparing your reference genomes
-VAPER creates assemblies using a consensus (i.e., reference-based) approach. As such, it is necessary to provide VAPER with appropriate references for each species/variant you intend to assemble. References are provided as individual FASTA files within a tar compressed directory. Assemblies created from references containing multiple contigs will be concatenated into a single contig. See instructions below for how prepare the reference directory.
+VAPER creates assemblies using a consensus (i.e., reference-based) approach. As such, it is necessary to provide VAPER with appropriate references for each species/variant you intend to assemble. References are provided in a samplesheet. An example of how to create this samplesheet is shown below.
 
-#### Gather all your reference genomes and place them into a single directory
-📂refs\
- ┣ 📜sars-cov-2.fasta\
- ┣ 📜mumps.fasta\
- ┣ 📜measles.fasta\
- ┣ 📜flu-a-h1n1.fasta\
- ┣ 📜flu-a-h3n2.fasta\
- ┗ 📜flu-b.fasta
-
-#### Compress the directory
- ```
- tar czvf refs.tar.gz refs/
- ```
-#### Prepapre your reference metadata file (Optional)
-Metadata can be provided for each reference assembly. This data will be incorporated into the final report and is intended to aid interpretation. The `REFERENCE` column is the only required field. Otherwise, you can provide whatever fields/information you want. See an example below.
-`refs-meta.csv`:
+`ref-list.csv`
 ```csv
-REFERENCE,SPECIES,VARIANT
-sars-cov-2.fasta,Severe acute respiratory syndrome coronavirus 2,NA
-mumps.fasta,Mumps orthorubulavirus,NA
-measles.fasta,Measles Morbillivirus,NA
-flu-a-h1n1.fasta,Influenza A virus,H1N1
-flu-a-h3n2.fasta,Influenza A virus,H3N2
-flu-b.fasta,Influenza B virus,NA
-```
-
-### Step 2: Download the Kraken2 RefSeq viral database
-VAPER gives you a summary of all viral species in your sample, as determined via Kraken2 and the RefSeq viral database. This step is completely independent of consensus assembly generation and is only meant to ensure that you are capturing all relevant species in your sample. You can download the most recent version of the RefSeq viral database [here](https://benlangmead.github.io/aws-indexes/k2). An example of how to do this from the command-line is shown below:
-```bash
-wget https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20231009.tar.gz
+taxa,assembly
+Influenza_A_virus_H1N1,GCF_001343785.1_ViralMultiSegProj274766_genomic.fna
+Influenza_A_virus_H2N2,GCF_000866645.1_ViralMultiSegProj15620_genomic.fna
+Influenza_A_virus_H3N2,GCF_000865085.1_ViralMultiSegProj15622_genomic.fna
+Influenza_A_virus_H5N1,GCF_000864105.1_ViralMultiSegProj15617_genomic.fna
+Influenza_A_virus_H7N9,GCF_000928555.1_ViralMultiSegProj274585_genomic.fna
+Influenza_A_virus_H9N2,GCF_000851145.1_ViralMultiSegProj14892_genomic.fna
+Influenza_B_virus,GCF_000820495.2_ViralMultiSegProj14656_genomic.fna
+Lyssavirus_rabies,GCF_000859625.1_ViralProj15144_genomic.fna
+Measles_Morbillivirus,GCF_000854845.1_ViralProj15025_genomic.fna
+Mumps_orthorubulavirus,GCF_000856685.1_ViralProj15059_genomic.fna
+Severe_acute_respiratory_syndrome_coronavirus_2,GCF_009858895.2_ASM985889v3_genomic.fna
+West_Nile_virus,GCF_000875385.1_ViralProj30293_genomic.fna
 ```
 
 ### Step 2: Prepare your samplesheet
@@ -73,27 +56,25 @@ Run VAPER using the command below, making adjustments where necessary.
 nextflow run DOH-JDJ0303/VAPER \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
-   --refs $PWD/refs.tar.gz \
-   --refs_meta $PWD/refs-meta.csv \
-   --k2db $PWD/k2_viral_20231009.tar.gz \
+   --refs ref-list.csv \
    --outdir <OUTDIR>
 ```
 ### Step 4: Fine tuning your assembly
 Adjust one or more of the options below to fine-tune your assembly.
 ```
 options:
---gen_frac        Minimum genome fraction for an assembly to be created (Default: 0.8)
+--mode            Reference selection mode ('fast' or 'accurate'; default: 'accurate')
+--avg_depth       Minimum average depth of coverage for an assembly to be created (default: 100). Only used in 'fast' mode.
+--gen_frac        Minimum genome fraction for an assembly to be created (default: 0.7). Used in 'fast' and 'accurate' mode.
 --assembler       Assembler to use for Shovill (skesa, spades, velvet, or megahit) (Default: spades)
---min_contig_cov  Minimum contig coverage for Shovill (Default: 2)
+--min_contig_cov  Minimum contig coverage for Shovill (Default: 10)
 --min_contig_len  Minimum contig length for Shovill (Default: 100)
 --gsize           Approx. genome size for Shovill (Default: 1.0M)
+--ivar_q          Minimum quality score threshold to count base for ivar (default: 20)
+--ivar_t          Minimum frequency threshold(0 - 1) to call consensus for ivar (default: 0.5)
+--ivar_n          (N/-) Character to print in regions with less than minimum coverage for ivar (default: N)
+--ivar_m          Minimum depth to call consensus for ivar (default: 10)
 ```
-
-:::warning
-Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
-provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
-see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
-:::
 
 ## Pipeline output
 

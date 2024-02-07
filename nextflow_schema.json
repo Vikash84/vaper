@@ -12,6 +12,7 @@
             "description": "Define where the pipeline should find input data and save output data.",
             "required": [
                 "input",
+                "refs",
                 "outdir"
             ],
             "properties": {
@@ -25,23 +26,68 @@
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/waphlviral/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
                 },
+                "refs": {
+                    "type": "string",
+                    "description": "Path to comma-separated file containing information about reference assemblies.",
+                    "pattern": "^\\S+\\.csv",
+                    "format": "file-path",
+                    "fa_icon": "fas fa-file-csv"
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
-                },
-                "email": {
+                }
+            }
+        },
+        "classify_options": {
+            "title": "Classify options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "mode": {
                     "type": "string",
-                    "description": "Email address for completion summary.",
-                    "fa_icon": "fas fa-envelope",
-                    "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
-                    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                    "default": "accurate",
+                    "description": "Reference selection mode ('fast' or 'accurate')",
+                    "fa_icon": "fas fa-tachometer-alt"
                 },
-                "multiqc_title": {
+                "assembler": {
                     "type": "string",
-                    "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
-                    "fa_icon": "fas fa-file-signature"
+                    "default": "skesa",
+                    "description": "Assembler to use for Shovill (skesa, spades, velvet, or megahit)",
+                    "fa_icon": "fas fa-align-center"
+                },
+                "min_contig_cov": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Minimum contig coverage for Shovill",
+                    "fa_icon": "fas fa-align-center"
+                },
+                "min_contig_len": {
+                    "type": "integer",
+                    "default": 300,
+                    "description": "Minimum contig length for Shovill",
+                    "fa_icon": "fas fa-align-center"
+                },
+                "gsize": {
+                    "type": "string",
+                    "default": "1.0M",
+                    "description": "Approx. genome size for Shovill",
+                    "fa_icon": "fas fa-align-center"
+                },
+                "avg_depth": {
+                    "type": "integer",
+                    "default": 100,
+                    "fa_icon": "fas fa-align-center",
+                    "description": "Minimum average depth of coverage for an assembly to be created. Only used in 'fast' mode."
+                },
+                "sm_db": {
+                    "type": "string",
+                    "default": "${baseDir}/assets/databases/genbank-2022.03-viral-k21.zip",
+                    "fa_icon": "fas fa-bacteria",
+                    "description": "Path to the Sourmash viral GenBank database."
                 }
             }
         },
@@ -51,72 +97,32 @@
             "description": "",
             "default": "",
             "properties": {
-                "refs": {
-                    "type": "string",
-                    "description": "Path to compressed directory containing reference assemblies. File must be tar.gz compressed (e.g., tar czvf refs.tar.gz refs/)",
-                    "pattern": "^\\S+\\.tar.gz",
-                    "format": "file-path"
-                },
-                "refs_meta": {
-                    "type": "string",
-                    "description": "Path to a .csv file containing taxonomic information about the provided references. This file is optional.",
-                    "pattern": "^\\S+\\.csv$",
-                    "format": "file-path"
-                },
                 "gen_frac": {
                     "type": "number",
-                    "default": 0.75,
+                    "default": 0.7,
                     "description": "Minimum genome fraction for an assembly to be created"
-                }
-            },
-            "required": [
-                "refs"
-            ]
-        },
-        "taxonomy_options": {
-            "title": "Taxonomy options",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "k2db": {
-                    "type": "string",
-                    "description": "Path to compressed Kraken2 viral RefSeq database.",
-                    "default": "https://genome-idx.s3.amazonaws.com/kraken/k2_viral_20231009.tar.gz",
-                    "pattern": "^\\S+\\.tar.gz",
-                    "format": "file-path"
                 },
-                "assembler": {
-                    "type": "string",
-                    "default": "skesa",
-                    "description": "Assembler to use for Shovill (skesa, spades, velvet, or megahit)"
+                "ivar_t": {
+                    "type": "number",
+                    "default": 0.5,
+                    "description": "Minimum depth to call consensus for ivar"
                 },
-                "min_contig_cov": {
+                "ivar_q": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "Minimum quality score threshold to count base for ivar"
+                },
+                "ivar_m": {
                     "type": "integer",
                     "default": 10,
-                    "description": "Minimum contig coverage for Shovill"
+                    "description": "Minimum frequency threshold(0 - 1) to call consensus for ivar"
                 },
-                "min_contig_len": {
-                    "type": "integer",
-                    "default": 300,
-                    "description": "Minimum contig length for Shovill"
-                },
-                "gsize": {
+                "ivar_n": {
                     "type": "string",
-                    "default": "1.0M",
-                    "description": "Approx. genome size for Shovill"
-                },
-                "ncbi_assembly_stats": {
-                    "type": "string",
-                    "default": "${baseDir}/assets/databases/NCBI_Assembly_stats_2023-11-29.txt",
-                    "description": "Path to NCBI genome assembly statistics",
-                    "pattern": "^\\S+\\.txt",
-                    "format": "file-path"
+                    "default": "N",
+                    "description": "(N/-) Character to print in regions with less than minimum coverage for ivar"
                 }
-            },
-            "required": [
-                "k2db"
-            ]
+            }
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -325,10 +331,10 @@
             "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/definitions/assembly_options"
+            "$ref": "#/definitions/classify_options"
         },
         {
-            "$ref": "#/definitions/taxonomy_options"
+            "$ref": "#/definitions/assembly_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
@@ -339,5 +345,29 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "multiqc_title": {
+            "type": "string",
+            "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
+            "fa_icon": "fas fa-file-signature",
+            "hidden": true
+        },
+        "email": {
+            "type": "string",
+            "description": "Email address for completion summary.",
+            "fa_icon": "fas fa-envelope",
+            "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
+            "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
+            "hidden": true
+        },
+        "igenomes_ignore": {
+            "type": "string",
+            "hidden": true
+        },
+        "genome": {
+            "type": "string",
+            "hidden": true
+        }
+    }
 }

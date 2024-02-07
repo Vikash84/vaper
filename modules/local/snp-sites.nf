@@ -1,4 +1,5 @@
 process SNPSITES {
+    tag "${meta.id}-${ref_id}"
     label 'process_medium'
 
     conda "bioconda::snp-sites=2.5.1"
@@ -7,10 +8,10 @@ process SNPSITES {
         'biocontainers/snp-sites:2.5.1--hed695b0_0' }"
 
     input:
-    tuple val(meta), val(ref), path(aln)
+    tuple val(meta), val(ref_id), path(aln)
 
     output:
-    tuple val(meta), val(ref), path("*.vcf"), emit: vcf
+    tuple val(meta), val(ref_id), path("*.vcf"), emit: vcf
     path "versions.yml" ,                     emit: versions
 
     when:
@@ -23,7 +24,7 @@ process SNPSITES {
     snp-sites \\
         $args \\
         -v \\
-        -o ${prefix}-${ref}.vcf \\
+        -o ${prefix}-${ref_id}.vcf \\
         $aln
 
     cat <<-END_VERSIONS > versions.yml
