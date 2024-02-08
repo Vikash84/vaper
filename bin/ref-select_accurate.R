@@ -68,7 +68,7 @@ make_plot <- function(a){
 }
 plots <- lapply(unique(depth$ASSEMBLY), FUN = make_plot)
 p <- wrap_plots(plots, ncol = 1, nrow = length(unique(depth$ASSEMBLY)))
-ggsave(plot = p, file = "coverage.jpg", dpi = 300, width = 50, height = 50, limitsize = F)
+ggsave(plot = p, file = paste0(sample,".ref-genfrac.jpg"), dpi = 300, width = 50, height = 50, limitsize = F)
 
 # set max depth to 1 & determine genome fraction
 ref.summary <- depth %>%
