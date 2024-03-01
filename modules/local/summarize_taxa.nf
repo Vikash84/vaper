@@ -9,9 +9,11 @@ process SUMMARIZE_TAXA {
     path refs_comp
 
     output:
-    tuple val(meta), path("*.ref-summary.csv"), emit: ref_summary, optional: true
-    tuple val(meta), path("*.ref-list.csv"),    emit: ref_list
-    tuple val(meta), path("*.taxa-summary.csv"),  emit: sm_summary
+    tuple val(meta), path("*.ref-summary.csv"),  emit: ref_summary, optional: true
+    tuple val(meta), path("*.ref-list.csv"),     emit: ref_list
+    tuple val(meta), path("*.taxa-summary.csv"), emit: sm_summary
+    tuple val(meta), path("*.jpg"),              emit: cov_plot, optional: true
+
 
     when:
     task.ext.when == null || task.ext.when
