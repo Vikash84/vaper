@@ -25,10 +25,11 @@ paf <- read_tsv(paf_file, col_names = F) %>%
   rename(TARGET = 6,
          LENGTH = 7,
          START = 8,
-         END = 9) %>%
+         END = 9,
+         ALIGN = 11) %>%
   mutate(ASSEMBLY=str_remove_all(TARGET, pattern="(\\d+$)"),
          CONTIG = str_extract(TARGET, "(\\d+$)")) %>%
-  select(TARGET, ASSEMBLY, CONTIG, LENGTH, START, END)
+  select(TARGET, ASSEMBLY, CONTIG, LENGTH, START, END, ALIGN)
 
 # determine missing targets & add back to paf
 paf <- read_tsv(refs_comp) %>%
@@ -39,7 +40,7 @@ paf <- read_tsv(refs_comp) %>%
          START = 0,
          END = 0,
          ALIGN = 0) %>%
-  select(TARGET, ASSEMBLY, CONTIG, LENGTH, START, END) %>%
+  select(TARGET, ASSEMBLY, CONTIG, LENGTH, START, END, ALIGN) %>%
   filter(!(TARGET %in% paf$TARGET)) %>%
   rbind(paf)
 
@@ -66,9 +67,18 @@ make_plot <- function(a){
         labs(x = "Site", y = "Depth")
     return(p)
 }
-plots <- lapply(unique(depth$ASSEMBLY), FUN = make_plot)
-p <- wrap_plots(plots, ncol = 1, nrow = length(unique(depth$ASSEMBLY)))
-ggsave(plot = p, file = paste0(sample,".ref-genfrac.jpg"), dpi = 300, width = 50, height = 50, limitsize = F)
+plot_list <- paf %>%
+  group_by(ASSEMBLY) %>%
+  filter(sum(ALIGN) > 0) %>%
+  .$ASSEMBLY %>%
+  unique()
+n_plots <- length(plot_list)
+# determine if plots should be made 
+if(n_plots > 0){
+  plots <- lapply(plot_list, FUN = make_plot)
+  p <- wrap_plots(plots, ncol = 1, nrow = n_plots)
+  ggsave(plot = p, file = paste0(sample,".ref-genfrac.jpg"), dpi = 300, width = 10, height = 2*n_plots, limitsize = F)
+}
 
 # set max depth to 1 & determine genome fraction
 ref.summary <- depth %>%
