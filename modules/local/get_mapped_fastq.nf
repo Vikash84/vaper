@@ -8,7 +8,7 @@ process MAPPED_FASTQ {
         'biocontainers/seqtk:1.3--h5bf99c6_3' }"
 
     input:
-    tuple val(meta), val(ref_id), path(filter_list), path(reads)
+    tuple val(meta), val(ref_id), path(filter_list), path(ref), path(reads)
 
     output:
     path "*.gz"         , emit: reads
