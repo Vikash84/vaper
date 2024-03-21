@@ -46,4 +46,4 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     rm -rf /var/lib/apt/lists/*
 
 # required R packages
-RUN R -e "install.packages(c('tidyverse'), repos='https://cran.rstudio.com/')"
+RUN R -e "install.packages(c('readr', 'dplyr','tidyr','stringr','patchwork','ggplot2'), repos='https://cran.rstudio.com/')"
