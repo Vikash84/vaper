@@ -2,7 +2,7 @@ process SUMMARIZE_TAXA {
     tag "$meta.id"
     label 'process_low'
 
-    container "docker.io/jdj0303/waphl-viral-base:1.0.0"
+    container "docker.io/jdj0303/vaper-base:beta"
 
     input:
     tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz")
