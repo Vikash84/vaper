@@ -9,6 +9,9 @@ include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE } from '../../modules/nf-core/sour
 include { SOURMASH_GATHER as SM_GATHER_SELECT } from '../../modules/nf-core/sourmash/gather/main'
 include { SOURMASH_GATHER as SM_GATHER_SAMPLE } from '../../modules/nf-core/sourmash/gather/main'
 include { SUMMARIZE_TAXA                      } from '../../modules/local/summarize_taxa'
+include { SM2REFS                             } from '../../modules/local/sm2refs'
+include { NCBI_DATASETS                       } from '../../modules/local/ncbi-datasets'
+
 
 workflow CLASSIFY {
     take:
@@ -139,7 +142,40 @@ workflow CLASSIFY {
         .out
         .sm_summary
         .set{ ch_sm_summary }
-    
+
+    /* 
+    =============================================================================================================================
+        REFERENCE SELECTION: Kitchen Sink
+        - Downloads NCBI assembly for all Sourmash hits and adds them to the reference list
+    =============================================================================================================================
+    */
+    if (params.kitchen_sink){
+
+        SM2REFS (
+        ch_sm_summary
+    )
+
+        SM2REFS
+            .out
+            .refs
+            .collect()
+            .splitCsv(header: true, elem: 1)
+            .map{ meta, result -> [ meta, result.taxa, result.accession ] }
+            .set{ ch_sm_refs }
+
+        NCBI_DATASETS (
+            ch_sm_refs.map{ meta, ref_id, accession -> [ ref_id, accession ] }.unique()
+        )
+
+        ch_sm_refs
+            .map{ meta, ref_id, accession -> [ ref_id, meta ] }
+            .combine(NCBI_DATASETS.out.assembly, by: 0)
+            .map{ ref_id, meta, assembly -> [ meta, ref_id, assembly ] }
+            .concat(ch_ref_list)
+            .set{ ch_ref_list }
+
+    }
+        
     emit:
     ref_list   = ch_ref_list   // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]
     sm_summary = ch_sm_summary // channel: [ val(meta), val(result) ]
