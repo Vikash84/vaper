@@ -20,13 +20,13 @@
   "enabled": true,
   "experimental": true,
   "files": {
-    "pathogenJson": "pathogen.json",
+    "pathogenJson": "nextclade-template.json",
     "reference": "reference.fasta"
   },
   "official": false,
   "qc": {
     "frameShifts": {
-      "enabled": true,
+      "enabled": false,
       "scoreWeight": 20
     },
     "missingData": {
@@ -40,7 +40,7 @@
     },
     "privateMutations": {
       "cutoff": 300,
-      "enabled": true,
+      "enabled": false,
       "typical": 50,
       "weightLabeledSubstitutions": 6,
       "weightReversionSubstitutions": 6,
@@ -53,7 +53,7 @@
       "windowSize": 100
     },
     "stopCodons": {
-      "enabled": true,
+      "enabled": false,
       "scoreWeight": 20
     }
   },

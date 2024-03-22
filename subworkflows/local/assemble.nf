@@ -6,6 +6,7 @@ include { BWA_MEM          } from '../../modules/local/bwa_mem'
 include { SAMTOOLSTATS2TBL } from '../../modules/local/samtoolstats2tbl'
 include { MAPPED_FASTQ     } from '../../modules/local/get_mapped_fastq'
 include { IVAR_CONSENSUS   } from '../../modules/local/ivar_consensus'
+include { NEXTCLADE_CONFIG } from '../../modules/local/nexclade/config/main'
 include { NEXTCLADE_RUN    } from '../../modules/local/nexclade/run/main'
 
 
@@ -56,10 +57,18 @@ workflow ASSEMBLE {
         ASSEMBLY QC METRICS
     =============================================================================================================================
     */
+    // MODULE: Configure Nextclade QC file
+    NEXTCLADE_CONFIG (
+        ref_list.map{ meta, ref_id, ref_path, reads -> [ ref_id, ref_path ] }.unique(),
+        file("${baseDir}/assets/nextclade-template.json", checkIfExists: true)
+    )
     // MODULE: Run Nextclade
     NEXTCLADE_RUN (
-        IVAR_CONSENSUS.out.consensus.join(ref_list.map{ meta, ref_id, ref_path, reads -> [ meta, ref_id, ref_path ] }, by: [0,1]),
-        file("${baseDir}/assets/nextclade-template.json", checkIfExists: true)
+        IVAR_CONSENSUS
+            .out
+            .consensus
+            .combine(NEXTCLADE_CONFIG.out.config.map{ ref_id, ref, config -> [ ref, ref_id, config ] }, by: 1)
+            .map{ ref_id, meta, consensus, ref, config -> [ meta, ref_id, consensus, ref, config ] }
     )
 
     emit:

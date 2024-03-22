@@ -39,7 +39,7 @@ if(file.exists(nextclade)){
              totalSubstitutions,
              totalDeletions,
              totalInsertions,
-             totalFrameShifts,
+             totalMissing,
              totalNonACGTNs,
              coverage,
              ASSEMBLY_LENGTH) %>%
@@ -47,8 +47,8 @@ if(file.exists(nextclade)){
              ASSEMBLY_SUBS = totalSubstitutions,
              ASSEMBLY_DEL = totalDeletions,
              ASSEMBLY_INS = totalInsertions,
-             ASSEMBLY_FRAMESHIFTS = totalFrameShifts,
-             ASSEMBLY_NON_ATCG = totalNonACGTNs,
+             ASSEMBLY_MISSING = totalMissing,
+             ASSEMBLY_NON_ATCGN = totalNonACGTNs,
              ASSEMBLY_GEN_FRAC = coverage)
   df.summaryline <- cbind(df.summaryline, df.nextclade)
 }else(cat("\nNo assembly stats provided\n"))

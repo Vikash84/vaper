@@ -1,5 +1,5 @@
 process NEXTCLADE_RUN {
-    tag "$meta.id"
+    tag "${prefix}"
     label 'process_low'
 
     conda "${moduleDir}/environment.yml"
@@ -8,37 +8,32 @@ process NEXTCLADE_RUN {
         'biocontainers/nextclade:3.1.0--h9ee0642_0' }"
 
     input:
-    tuple val(meta), val(ref_id), path(consensus), path(ref)
-    path db_template
+    tuple val(meta), val(ref_id), path(consensus), path(ref), path(config)
 
     output:
-    tuple val(meta), val(ref_id), path("${prefix}-${ref_id}.len.tsv"), emit: tsv
-    path "versions.yml"                                          , emit: versions
+    tuple val(meta), val(ref_id), path("${prefix}.len.tsv"), emit: tsv
+    path "versions.yml"                                    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = "${meta.id}-${ref_id}"
     """
-    # concat reference contigs
-    echo ">${ref_id}" > ref.fa
-    cat ${ref} | grep -v ">" | tr -d '\n\t\r ' >> ref.fa
-
     nextclade \\
         run \\
         $args \\
         --jobs $task.cpus \\
-        -r ref.fa \\
-        -p ${db_template} \\
+        -r ${ref} \\
+        -p ${config} \\
         --output-all ./ \\
-        --output-basename "${prefix}-${ref_id}" \\
+        --output-basename "${prefix}" \\
         ${consensus}
 
     # add assembly length to output
     echo "ASSEMBLY_LENGTH" > LENGTH && cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> LENGTH
-    paste ${prefix}-${ref_id}.tsv LENGTH > ${prefix}-${ref_id}.len.tsv
+    paste ${prefix}.tsv LENGTH > ${prefix}.len.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
