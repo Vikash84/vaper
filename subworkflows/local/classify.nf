@@ -158,7 +158,6 @@ workflow CLASSIFY {
         SM2REFS
             .out
             .refs
-            .collect()
             .splitCsv(header: true, elem: 1)
             .map{ meta, result -> [ meta, result.taxa, result.accession ] }
             .set{ ch_sm_refs }
