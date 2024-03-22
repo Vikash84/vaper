@@ -1,5 +1,5 @@
 process BWA_MEM {
-    tag "$meta.id"
+    tag "${prefix}"
     label 'process_high'
 
     conda "bioconda::bwa"
@@ -22,7 +22,7 @@ process BWA_MEM {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = "${meta.id}-${ref_id}"
 
     """
     # setup for pipe
@@ -32,14 +32,14 @@ process BWA_MEM {
     bwa index ${ref}
 
     # run bwa mem, select only mapped reads, convert to .bam, and sort
-    bwa mem -t ${task.cpus} ${ref} ${reads[0]} ${reads[1]} | samtools view -b -F 4 - | samtools sort - > ${prefix}-${ref_id}.bam
+    bwa mem -t ${task.cpus} ${ref} ${reads[0]} ${reads[1]} | samtools view -b -F 4 - | samtools sort - > ${prefix}.bam
 
     # gather read stats
-    samtools coverage ${prefix}-${ref_id}.bam > ${prefix}-${ref_id}.coverage.txt
-    samtools stats --threads ${task.cpus} ${prefix}-${ref_id}.bam > ${prefix}-${ref_id}.stats.txt
+    samtools coverage ${prefix}.bam > ${prefix}.coverage.txt
+    samtools stats --threads ${task.cpus} ${prefix}.bam > ${prefix}.stats.txt
 
     # get list of read headers for fastq extraction
-    samtools view ${prefix}-${ref_id}.bam | cut -f 1 | sort | uniq > ${prefix}-${ref_id}.read-list.txt
+    samtools view ${prefix}.bam | cut -f 1 | sort | uniq > ${prefix}.read-list.txt
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
