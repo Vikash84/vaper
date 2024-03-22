@@ -1,5 +1,5 @@
 process IVAR_CONSENSUS {
-    tag "$meta.id"
+    tag "${prefix}"
     label 'process_high'
 
     conda "bioconda::ivar"
@@ -17,7 +17,7 @@ process IVAR_CONSENSUS {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = "${meta.id}-${ref_id}"
 
     """
     # setup for pipe
@@ -26,7 +26,7 @@ process IVAR_CONSENSUS {
     # create mpilup and call consensus
     samtools mpileup -aa -A -Q 0 -d 0 ${bam} | \\
        ivar consensus \\
-       -p ${prefix}-${ref_id} \\
+       -p ${prefix} \\
        -m ${params.ivar_m} \\
        -n ${params.ivar_n} \\
        -t ${params.ivar_t} \\
