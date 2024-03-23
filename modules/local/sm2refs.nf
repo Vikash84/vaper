@@ -20,7 +20,7 @@ process SM2REFS {
     then
         # get list of NCBI accessions & species names
         cat ${sm_species} | tr ';' '\n' | cut -f 1 -n -d ' ' > ACCESSIONS
-        cat ${sm_species} | tr ';' '\n' | cut -c 17- | sed 's/ (.*//g' | tr ' ' '_' | tr -d '[]' | tr '/' '-' > SPECIES
+        cat ${sm_species} | tr ';' '\n' | cut -c 17- | tr ' ' '_' | tr -d '%' | tr '/()[]' '_' > SPECIES
         # combine into CSV
         echo "taxa,accession" > ${prefix}.sm-refs.csv
         paste -d ',' SPECIES ACCESSIONS >> ${prefix}.sm-refs.csv
