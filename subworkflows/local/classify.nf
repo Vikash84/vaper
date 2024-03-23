@@ -173,8 +173,6 @@ workflow CLASSIFY {
             .concat(ch_ref_list)
             .set{ ch_ref_list }
 
-        ch_ref_list.view()
-
     }
         
     emit:
