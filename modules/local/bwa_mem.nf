@@ -22,7 +22,7 @@ process BWA_MEM {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = "${meta.id}-${ref_id}"
+    prefix = "${meta.id}-${ref_id}"
 
     """
     # setup for pipe
