@@ -153,7 +153,7 @@ workflow VAPER {
     ASSEMBLE
         .out
         .samtoolstats2tbl
-        .join(ASSEMBLE.out.nextflow, by: [0,1])
+        .join(ASSEMBLE.out.nextclade, by: [0,1])
         .set{ ch_assembly_list }
 
     // Create channel of samples with no reference
