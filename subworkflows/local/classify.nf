@@ -28,11 +28,6 @@ workflow CLASSIFY {
     =============================================================================================================================
     */
 
-    // MODULE: Reference sketches
-    SM_SKETCH_REF (
-        ch_refs
-    )
-
     // MODULE: Sample sketches
     SM_SKETCH_SAMPLE (
         ch_reads.map{ meta, reads -> [ meta, reads.get(0) ] } // only uses forward read
@@ -95,6 +90,11 @@ workflow CLASSIFY {
     =============================================================================================================================
     */
     if (params.mode == "fast"){
+
+        // MODULE: Reference sketches
+        SM_SKETCH_REF (
+            ch_refs
+        )
 
         // MODULE: Run Sourmash gather against the reference pool using the forward reads
         SM_GATHER_SELECT (
