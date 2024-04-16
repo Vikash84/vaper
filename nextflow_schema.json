@@ -53,16 +53,15 @@
                     "description": "Reference selection mode ('fast' or 'accurate')",
                     "fa_icon": "fas fa-tachometer-alt"
                 },
+                "denovo_assembler": {
+                    "type": "string",
+                    "default": "spades",
+                    "description": "De novo assembler for Shovill ('spades', 'megahit', 'velvet', 'skesa'')"
+                },
                 "kitchen_sink": {
                     "type": "boolean",
                     "description": "Attempts to build consensus assemblies for all species identified by sourmash.",
                     "fa_icon": "fas fa-sink"
-                },
-                "assembler": {
-                    "type": "string",
-                    "default": "skesa",
-                    "description": "Assembler to use for Shovill (skesa, spades, velvet, or megahit)",
-                    "fa_icon": "fas fa-align-center"
                 },
                 "min_contig_cov": {
                     "type": "integer",
@@ -75,6 +74,12 @@
                     "default": 300,
                     "description": "Minimum contig length for Shovill",
                     "fa_icon": "fas fa-align-center"
+                },
+                "gen_frac": {
+                    "type": "number",
+                    "default": 0.7,
+                    "description": "Minimum genome fraction for an assembly to be created",
+                    "fa_icon": "fas fa-chart-pie"
                 },
                 "gsize": {
                     "type": "string",
@@ -102,11 +107,10 @@
             "description": "",
             "default": "",
             "properties": {
-                "gen_frac": {
-                    "type": "number",
-                    "default": 0.7,
-                    "description": "Minimum genome fraction for an assembly to be created",
-                    "fa_icon": "fas fa-chart-pie"
+                "consensus_assembler": {
+                    "type": "string",
+                    "default": "irma",
+                    "description": "Which consensus assembler to use ('irma' or 'ivar')"
                 },
                 "ivar_t": {
                     "type": "number",
