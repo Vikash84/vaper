@@ -19,6 +19,7 @@ process SUMMARIZE_TAXA {
     task.ext.when == null || task.ext.when
 
     prefix = task.ext.prefix ?: "${meta.id}"
+    cov_plot = ${params.cov_plot} ? 1 : 0
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     #---- REFERENCE SELECTION: FAST ----#
@@ -31,7 +32,7 @@ process SUMMARIZE_TAXA {
     #---- REFERENCE SELECTION: ACCURATE ----#
     if [ "${params.mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
-        ref-select_accurate.R ${ref_info} ${refs_comp} ${prefix} ${params.gen_frac}
+        ref-select_accurate.R ${ref_info} ${refs_comp} ${prefix} ${params.gen_frac} ${cov_plot}
     else
         touch ${prefix}.ref-list.csv        
     fi
