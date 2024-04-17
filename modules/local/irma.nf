@@ -25,6 +25,6 @@ process IRMA {
     # combine references into single file
     cat ${refs} > flu-amd/IRMA_RES/modules/ORG/reference/consensus.fasta
     # run IRMA
-    flu-amd/IRMA ORG ${reads[0]} ${reads[1]} results
+    chmod -R +wrx flu-amd/ && flu-amd/IRMA ORG ${reads[0]} ${reads[1]} results
     """
 }
