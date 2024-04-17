@@ -2,7 +2,7 @@ process IRMA {
     tag "${prefix}"
     label 'process_high'
     
-    container "docker.io/cdcgov/irma:v1.1.4"
+    container "docker.io/staphb/irma:1.1.4"
 
     input:
     tuple val(meta), path(refs), path(reads)
