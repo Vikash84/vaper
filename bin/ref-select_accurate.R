@@ -19,7 +19,7 @@ paf_file <- args[1]
 refs_comp <- args[2]
 sample <- args[3]
 gen_frac <- args[4]
-make_plot <- args[5]
+plot_logic <- args[5]
 
 # load alignment file
 paf <- read_tsv(paf_file, col_names = F) %>%
@@ -73,9 +73,8 @@ plot_list <- paf %>%
   filter(sum(ALIGN) > 0) %>%
   .$ASSEMBLY %>%
   unique()
-n_plots <- length(plot_list)
 # determine if plots should be made 
-if(n_plots > 0 && make_plot == 1){
+if(length(plot_list) > 0 & as.character(plot_logic) == "TRUE"){
   plots <- lapply(plot_list, FUN = make_plot)
   p <- wrap_plots(plots, ncol = 1, nrow = n_plots)
   ggsave(plot = p, file = paste0(sample,".ref-genfrac.jpg"), dpi = 300, width = 10, height = 2*n_plots, limitsize = F)
