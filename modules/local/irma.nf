@@ -1,6 +1,7 @@
 process IRMA {
     tag "${prefix}"
     label 'process_high'
+    stageInMode 'copy'
 
     container "docker.io/jdj0303/waphl-viral-base:1.0.0"
 
