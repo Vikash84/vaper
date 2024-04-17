@@ -11,6 +11,8 @@ process IRMA {
     output:
     tuple val(meta), path('results/*.fasta'),  emit: consensus
     tuple val(meta), path('results/*.bam'),    emit: bam
+    tuple val(meta), path('results/logs/'),    emit: logs
+    tuple val(meta), path('results/figures/'), emit: figures
     //path "versions.yml",                     emit: versions
 
     when:
