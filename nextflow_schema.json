@@ -98,6 +98,10 @@
                     "default": "${baseDir}/assets/databases/genbank-2022.03-viral-k21.zip",
                     "fa_icon": "fas fa-bacteria",
                     "description": "Path to the Sourmash viral GenBank database."
+                },
+                "cov_plot": {
+                    "type": "boolean",
+                    "description": "Option to produce coverage plots. Can cause pipeline to fail if plots get too large."
                 }
             }
         },
