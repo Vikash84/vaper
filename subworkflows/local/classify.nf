@@ -55,10 +55,18 @@ workflow CLASSIFY {
     =============================================================================================================================
     */
     if (params.mode == "accurate"){
-
-        // MODULE: Prepapre references
+        ch_refs
+            .map{ meta, refs -> refs }
+            .collect()
+            .map{ assembly -> [ assembly ] }
+            .set{ ch_ref_assemblies }
+        // MODULE: Prepare references
         FORMAT_REFS (
-            ch_refs.map{ meta, refs -> refs }.collect()
+            ch_ref_assemblies
+                .flatten()
+                .map{ assembly -> file(assembly).getName() }
+                .collectFile(name: 'ref-list.txt',newLine: true)
+                .combine(ch_ref_assemblies)
         )
 
         // MODULE: Run Shovill

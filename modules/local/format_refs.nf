@@ -7,7 +7,7 @@ process FORMAT_REFS {
         'staphb/seqtk:1.3' }"
 
     input:
-    path refs
+    tuple path(ref_list), path(assemblies)
 
     output:
     path "refs.fa",       emit: refs
@@ -21,7 +21,7 @@ process FORMAT_REFS {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # rename fasta headers and combine into multi-fasta file
-    for ref in \$(echo "${refs}")
+    for ref in \$(cat ${ref_list})
     do
         seqtk seq -C \${ref} > tmp.fa
         seqtk rename tmp.fa \${ref##*/} >> refs.fa
