@@ -77,7 +77,7 @@ workflow CLASSIFY {
         // MODULE: Map contigs to the references
         MINIMAP2_ALIGN (
             SHOVILL.out.contigs,
-            FORMAT_REFS.out.refs.map{ refs -> [ "reference", refs ] },
+            FORMAT_REFS.out.refs.map{ refs -> [ "reference", refs ] }.first(),
             false,
             false,
             false
@@ -132,7 +132,7 @@ workflow CLASSIFY {
 
     SUMMARIZE_TAXA(
         ch_taxa_sample,
-        ch_refs_comp
+        ch_refs_comp.first()
     )
 
     // Update reference list
@@ -161,7 +161,7 @@ workflow CLASSIFY {
 
         SM2REFS (
         ch_sm_summary
-    )
+        )
 
         SM2REFS
             .out

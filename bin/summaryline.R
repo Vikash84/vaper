@@ -42,7 +42,8 @@ if(file.exists(nextclade)){
              totalMissing,
              totalNonACGTNs,
              coverage,
-             ASSEMBLY_LENGTH) %>%
+             ASSEMBLY_LENGTH,
+             REF_LENGTH) %>%
       rename(ASSEMBLY_QC = qc.overallStatus,
              ASSEMBLY_SUBS = totalSubstitutions,
              ASSEMBLY_DEL = totalDeletions,

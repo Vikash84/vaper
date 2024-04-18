@@ -26,6 +26,7 @@ df <- df %>%
          REFERENCE,
          ASSEMBLY_QC,
          ASSEMBLY_LENGTH,
+         REF_LENGTH,
          ASSEMBLY_EST_DEPTH,
          ASSEMBLY_GEN_FRAC,
          ASSEMBLY_SUBS,

@@ -31,9 +31,10 @@ process NEXTCLADE_RUN {
         --output-basename "${prefix}" \\
         ${consensus}
 
-    # add assembly length to output
-    echo "ASSEMBLY_LENGTH" > LENGTH && cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> LENGTH
-    paste ${prefix}.tsv LENGTH > ${prefix}.len.tsv
+    # add assembly & reference length to output
+    echo "ASSEMBLY_LENGTH" > CON_LENGTH && cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> CON_LENGTH
+    echo "REF_LENGTH" > REF_LENGTH && cat ${ref} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> REF_LENGTH
+    paste ${prefix}.tsv CON_LENGTH REF_LENGTH > ${prefix}.len.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
