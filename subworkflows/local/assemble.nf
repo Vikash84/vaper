@@ -37,13 +37,13 @@ workflow ASSEMBLE {
             .out
             .bam
             .flatMap{ meta, files -> files.collect{ file -> [ meta, file ] }}
-            .map{ meta, bam -> [meta, file(bam).getSimpleName(), bam] }
+            .map{ meta, bam -> [meta, bam.getSimpleName(), bam] }
             .set{ ch_bam }
         IRMA
             .out
             .consensus
             .flatMap{ meta, files -> files.collect( file -> [ meta, file ] )}
-            .map{ meta, consensus -> [meta, file(consensus).getSimpleName(), consensus] }
+            .map{ meta, consensus -> [meta, consensus.getSimpleName(), consensus] }
             .set{ ch_consensus }
     }
 
