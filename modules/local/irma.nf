@@ -3,7 +3,7 @@ process IRMA {
     label 'process_high'
     stageInMode 'copy'
     
-    container "docker.io/jdj0303/vaper-base:beta"
+    container "docker.io/cdcgov/irma:v1.1.4"
 
     input:
     tuple val(meta), path(refs), path(reads)
@@ -24,15 +24,16 @@ process IRMA {
     prefix = "${meta.id}"
 
     """
-    # set permissions
-    echo "Checking Permissions:"
-    chown -R \$(id -u):\$(id -g) flu-amd/ || true
-    chmod -R +wrx flu-amd/ || true
-    ls -la flu-amd/
-    echo "\n"
+    # determine IRMA path
+    irma_path=\$(which IRMA)
+    # create module
+    mod=\$(shuf -er -n20  {A..Z} {a..z} {0..9} | tr -d '\n')
+    mv ${module_template} \${irma_path}_RES/modules/\${mod}
     # combine references into single file
-    cat ${refs} > flu-amd/IRMA_RES/modules/ORG/reference/consensus.fasta
+    cat ${refs} > \${irma_path}_RES/modules/\${mod}/reference/consensus.fasta
     # run IRMA
-    flu-amd/IRMA ORG ${reads[0]} ${reads[1]} results
+    IRMA \${mod} ${reads[0]} ${reads[1]} results
+    # clean up
+    rm -r \${irma_path}_RES/modules/\${mod}
     """
 }
