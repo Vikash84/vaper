@@ -40,25 +40,13 @@ workflow ASSEMBLE {
         IRMA
             .out
             .bam
-            .flatMap{ meta, files -> files.collect{ file -> [ meta, file ] }}
-            .view()
-
-        IRMA
-            .out
-            .consensus
-            .flatMap{ meta, files -> files.collect( file -> [ meta, file ] )}
-            .view()
-            
-        IRMA
-            .out
-            .bam
-            .flatMap{ meta, files -> files.collect{ file -> [ meta, file ] }}
+            .transpose()
             .map{ meta, bam -> [meta, bam.getSimpleName(), bam] }
             .set{ ch_bam }
         IRMA
             .out
             .consensus
-            .flatMap{ meta, files -> files.collect( file -> [ meta, file ] )}
+            .transpose()
             .map{ meta, consensus -> [meta, consensus.getSimpleName(), consensus] }
             .set{ ch_consensus }
     }
