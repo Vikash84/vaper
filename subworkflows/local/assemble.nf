@@ -33,6 +33,22 @@ workflow ASSEMBLE {
             file("${baseDir}/assets/IRMA_MODULE/", checkIfExists: true)
         )
 
+
+        /*
+        Troubleshooting
+        */
+        IRMA
+            .out
+            .bam
+            .flatMap{ meta, files -> files.collect{ file -> [ meta, file ] }}
+            .view()
+
+        IRMA
+            .out
+            .consensus
+            .flatMap{ meta, files -> files.collect( file -> [ meta, file ] )}
+            .view()
+            
         IRMA
             .out
             .bam
