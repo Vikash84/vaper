@@ -56,7 +56,8 @@ if(file.exists(nextclade)){
 
 #---- Sourmash Species Summary ----#
 df.summaryline <- df.summaryline %>%
-  mutate(SPECIES_SUMMARY = gsub(readLines(sm_summary), pattern = ";$", replacement = ""))
+  mutate(SPECIES_SUMMARY = case_when( sm_summary == "" ~ "No Viruses Detected",
+                                      TRUE ~ gsub(readLines(sm_summary), pattern = ";$", replacement = ""))
 
 #----- Create Summaryline -----#
 # make ID always show up first
