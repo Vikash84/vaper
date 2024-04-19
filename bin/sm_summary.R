@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 
 # check for required packages
-list.of.packages <- c("readr", "dplyr","tidyr")
+list.of.packages <- c("readr", "dplyr","tidyr","ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -9,13 +9,54 @@ if(length(new.packages)) install.packages(new.packages)
 library(readr)
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 
 # load args
 args <- commandArgs(trailingOnly=T)
-sm_output <- args[1]
-sample <- args[2]
+sm_taxa <- args[1]
+prefix <- args[2]
 
-# load Sourmash gather output
-df.sm <- read.csv(sm_output)
-colnames(df.sm)
-#  write.csv(file = paste0(sample,".k2-summary.csv"), quote = F, row.names = F)
+# load sourmash data
+df <- read_csv(sm_taxa)
+# create plot & summary
+if(nrow(df) > 0){
+    df <- df %>%
+      filter(f_match > 0.1) %>%
+      mutate(rel_abund = 100*(average_abund / sum(average_abund)),
+             gen_frac = 100*f_match,
+             name = case_when(rel_abund < 1 ~ "Other",
+                              TRUE ~ name)) %>%
+            group_by(name) %>%
+            summarize(abund = sum(rel_abund), gen_frac = sum(gen_frac), depth = sum(average_abund)) %>%
+            ungroup() %>%
+            arrange(abund) %>%
+      mutate(name = factor(name, levels = name),
+             ymax = cumsum(abund),
+             ymin = c(0, head(ymax, n=-1)))
+
+      # create plot & save
+      p <- ggplot(df, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=name))+
+        geom_rect() +
+        coord_polar(theta="y") +
+        xlim(c(2, 4))+
+        theme(axis.line.y=element_blank(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank(),
+              axis.title.x=element_blank(),
+              axis.title.y=element_blank(),
+              panel.background=element_blank(),
+              panel.grid.major=element_blank(),
+              panel.grid.minor=element_blank(),
+              plot.background=element_blank())
+    ggsave(plot = p, filename = paste0(prefix,".taxa-plot.jpg"), dpi = 300, height = 10, width = 15)
+
+    # create summaryline
+    summaryline <- df %>%
+      filter(name != "Other") %>%
+      mutate(virus = paste0(name," (",round(gen_frac, digits =0),"%/",round(depth, digits = 0),"X)")) %>%
+      .$virus %>%
+      paste(collapse = ";") %>%
+      gsub(pattern = ",", replacement = "")
+    write(x = summaryline, file = paste0(prefix,".taxa-summary.csv"))
+}else(write(x = "No Viruses Detected", file = paste0(prefix,".taxa-summary.csv")))
+     
