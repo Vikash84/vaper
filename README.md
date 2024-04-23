@@ -9,7 +9,7 @@ See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
 
 `ref-list.csv`
 ```csv
-taxa,segment,assembly
+taxa,assembly
 Influenza-A_HA,flu-a-HA.fa
 Influenza-A_NA,flu-a-NA.fa
 Measles,measles.fa
