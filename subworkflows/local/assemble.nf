@@ -110,5 +110,6 @@ workflow ASSEMBLE {
 
     emit:
     samtoolstats2tbl = BAM_STATS.out.stats    // channel: [ val(meta), val(ref), path(stats)) ]
-    nextclade        = NEXTCLADE_RUN.out.tsv // channel: [ val(meta), val(ref), path(stats)) ]
+    nextclade        = NEXTCLADE_RUN.out.tsv  // channel: [ val(meta), val(ref), path(stats)) ]
+    consensus        = ch_consensus           // channel: [ val(meta), val(ref_id), path(assembly) ]
 }

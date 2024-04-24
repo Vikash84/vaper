@@ -3,7 +3,6 @@
 
 """Provide a command line tool to validate and transform tabular samplesheets."""
 
-
 import argparse
 import csv
 import logging
@@ -35,6 +34,11 @@ class RowChecker:
         first_col="fastq_1",
         second_col="fastq_2",
         single_col="single_end",
+        truth_col="truth",
+        intra_group_col="intra_group",
+        intra_rep_col="intra_rep",
+        inter_group_col="inter_group",
+        inter_rep_col="inter_rep",
         **kwargs,
     ):
         """
