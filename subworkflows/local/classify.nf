@@ -16,7 +16,7 @@ include { NCBI_DATASETS                       } from '../../modules/local/ncbi-d
 workflow CLASSIFY {
     take:
     ch_reads // channel: [ val(meta), path(reads) ]
-    ch_refs  // channel: [ path(reference) ]
+    ch_refs  // channel: [ val(meta), path(reference) ]
 
     main:
 

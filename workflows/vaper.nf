@@ -33,9 +33,20 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 */
 
 //
+// MODULE: Local modules
+//
+include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
+include { SUMMARYLINE                 } from '../modules/local/create-summaryline'
+include { COMBINE_SUMMARYLINES        } from '../modules/local/combine-summary'
+
+//
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
+include { CLASSIFY } from '../subworkflows/local/classify'
+include { ASSEMBLE } from '../subworkflows/local/assemble'
+include { VALIDATE } from '../subworkflows/local/validate'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -48,17 +59,9 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FASTP                       } from '../modules/nf-core/fastp/main'
-include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
-include { SUMMARYLINE                 } from '../modules/local/create-summaryline'
-include { COMBINE_SUMMARYLINES        } from '../modules/local/combine-summary'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
 
-//
-// SUBWORKFLOWS
-//
-include { CLASSIFY } from '../subworkflows/local/classify'
-include { ASSEMBLE } from '../subworkflows/local/assemble'
 
 
 /*
@@ -87,6 +90,9 @@ workflow VAPER {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
+    INPUT_CHECK.out.reads.map{ meta, reads, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
+    INPUT_CHECK.out.refs.set{ ch_refs }
+
     /* 
     =============================================================================================================================
         QUALITY CONTROL: READS
@@ -97,7 +103,7 @@ workflow VAPER {
     // MODULE: Run FastQC
     //
     FASTQC (
-        INPUT_CHECK.out.reads
+        ch_reads
     )
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
 
@@ -105,7 +111,7 @@ workflow VAPER {
     // MODULE: Run Fastp
     //
     FASTP (
-        INPUT_CHECK.out.reads,
+        ch_reads,
         [],
         false,
         false
@@ -129,7 +135,7 @@ workflow VAPER {
     //
     CLASSIFY (
         FASTP.out.reads,
-        INPUT_CHECK.out.refs
+        ch_refs
     )
 
     /* 
@@ -140,7 +146,6 @@ workflow VAPER {
     // SUBWORKFLOW: Create consensus assemblies
     ASSEMBLE (
         CLASSIFY.out.ref_list.combine(FASTP.out.reads, by: 0)
-    
     )
 
     /* 
@@ -157,9 +162,7 @@ workflow VAPER {
         .set{ ch_assembly_list }
 
     // Create channel of samples with no reference
-    INPUT_CHECK
-        .out
-        .reads
+    ch_reads
         .map{ meta, reads -> [ meta ] }
         .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }, by: 0, remainder: true)
         .filter{ meta, ref_id -> ref_id == null}
@@ -189,6 +192,17 @@ workflow VAPER {
         .set{ all_summaries }
     COMBINE_SUMMARYLINES (
         all_summaries
+    )
+
+    /* 
+    =============================================================================================================================
+        VALIDATE RESULTS
+    =============================================================================================================================
+    */
+
+    VALIDATE(
+        INPUT_CHECK.out.reads.map{ meta, reads, truth, inter_group, intra_group -> [ meta, truth, inter_group, intra_group ] },
+        ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] }
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
