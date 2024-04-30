@@ -1,5 +1,5 @@
 # VAPER: Viral Assembly from Probe-based EnRichment
-VAPER creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) and shotgun metagenomic sequence data. One strength is it can handle samples containing multiple viral species and/or subtypes. When multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the minimum threshold (default: 10%). To ensure all relevant species are captured, VAPER supplies a summary of all viral sequences in the sample using [Sourmash](https://github.com/sourmash-bio/sourmash).
+VAPER creates consensus-based assemblies from probe enrichment (a.k.a hybrid capture/enrichment) and shotgun metagenomic sequence data. One strength is it can handle samples containing multiple viral species and/or subtypes. When multiple viruses are present, VAPER will generate a consensus assembly for each, so long as an appropriate reference genome is supplied and the estimated genome fraction exceeds the minimum threshold (default: 50%). To ensure all relevant species are captured, VAPER supplies a summary of all viral sequences in the sample using [Sourmash](https://github.com/sourmash-bio/sourmash).
 
 See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
 
