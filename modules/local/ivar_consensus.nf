@@ -17,7 +17,7 @@ process IVAR_CONSENSUS {
 
     script:
     def args = task.ext.args ?: ''
-    prefix = "${meta.id}-${ref_id}"
+    prefix = "${meta.id}_${ref_id}"
 
     """
     # setup for pipe
@@ -32,6 +32,8 @@ process IVAR_CONSENSUS {
        -t ${params.ivar_t} \\
        -q ${params.ivar_q} \\
        ${args}
+    
+    sed -i 's/>.*/>${prefix}/g' ${prefix}.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

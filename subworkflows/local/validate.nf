@@ -3,8 +3,7 @@
 //
 
 include { PAIR    } from '../../modules/local/val_pair'
-include { METRICS } from '../../modules/local/val_metrics'
-include { JOIN    } from '../../modules/local/val_join'
+include { GATHER  } from '../../modules/local/val_gather'
 include { REPORT  } from '../../modules/local/val_report'
 
 
@@ -64,26 +63,108 @@ workflow VALIDATE {
 
     ch_accuracy.concat(ch_inter_group).concat(ch_intra_group).set{ ch_datasets }
 
+    /* 
+    =============================================================================================================================
+        DETERMINE PAIRWISE COMPARISONS
+    =============================================================================================================================
+    */
     PAIR (
         ch_datasets
     )
 
-    METRICS (
+    /* 
+    =============================================================================================================================
+        GATHER METRICS
+    =============================================================================================================================
+    */
+    GATHER (
         PAIR.out.fasta.transpose()
     )
 
-    METRICS
+    /* 
+    =============================================================================================================================
+        JOIN ALL METRICS/PAIRS INTO SINGLE CHANNEL
+    =============================================================================================================================
+    */
+    // Accuracy
+    GATHER
         .out
         .result
-        .groupTuple(by: [0,1])
-        .join(PAIR.out.pairs.groupTuple(by: [0,1]), by: [0,1])
-        .set{ ch_results }
-    JOIN (
-        ch_results
-    )
+        .filter{ metric, type, results -> metric == "accuracy" }
+        .map{ metric, type, results -> results }
+        .splitText()
+        .filter(line -> line != "Sample,Truth,TP,FP,FN,Result\n")
+        .collectFile(name: "accuracy_results.csv")
+        .set{ ch_acc_res }
+    
+    PAIR
+        .out
+        .pairs
+        .filter{ metric, type, pairs -> metric == "accuracy" }
+        .map{ metric, type, pairs -> pairs }
+        .splitText()
+        .collectFile(name: "accuracy_pairs.csv")
+        .set{ ch_acc_pair }
+    
+    // Intra-assay Precision
+    GATHER
+        .out
+        .result
+        .filter{ metric, type, results -> metric == "precision" && type == "inter" }
+        .map{ metric, type, results -> results }
+        .splitText()
+        .filter(line -> line != "Sample1,Sample2,TP,PP,Result\n")
+        .collectFile(name: "precision_inter_results.csv")
+        .set{ ch_prec_inter_res }
+        
+    
+    PAIR
+        .out
+        .pairs
+        .filter{ metric, type, pairs -> metric == "precision" && type == "inter" }
+        .map{ metric, type, pairs -> pairs }
+        .splitText()
+        .collectFile(name: "precision_inter_pairs.csv")
+        .set{ ch_prec_inter_pair }
+    
+    // Intra-assay Precision
+    GATHER
+        .out
+        .result
+        .filter{ metric, type, results -> metric == "precision" && type == "intra" }
+        .map{ metric, type, results -> results }
+        .splitText()
+        .filter(line -> line != "Sample1,Sample2,TP,PP,Result\n")
+        .collectFile(name: "precision_intra_results.csv")
+        .set{ ch_prec_intra_res }
+    
+    PAIR
+        .out
+        .pairs
+        .filter{ metric, type, pairs -> metric == "precision" && type == "intra" }
+        .map{ metric, type, pairs -> pairs }
+        .splitText()
+        .collectFile(name: "precision_intra_pairs.csv")
+        .set{ ch_prec_intra_pair }
 
+    // Combine all
+    ch_acc_res
+        .concat(ch_acc_pair)
+        .concat(ch_prec_inter_res)
+        .concat(ch_prec_inter_pair)
+        .concat(ch_prec_intra_res)
+        .concat(ch_prec_intra_pair)
+        .flatten()
+        .collect()
+        .set{ ch_results }
+
+    /* 
+    =============================================================================================================================
+        GENERATE REPORT
+    =============================================================================================================================
+    */
     REPORT (
-        JOIN.out.results.flatten().collect()
+       ch_results
     )
 
     //emit:

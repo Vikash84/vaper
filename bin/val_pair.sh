@@ -1,9 +1,14 @@
 #!/bin/bash
 
+# val_pair.sh v1.0
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
+#----- INPUTS -----#
 F1=$1
 F2=$2
 PREFIX=$3
 
+# 
 cat $F1 | awk '{print $1}' > f1.fa
 cat $F2 | awk '{print $1}' > f2.fa
 

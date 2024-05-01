@@ -1,4 +1,4 @@
-process METRICS {
+process GATHER {
     label 'process_low'
 
     conda "bioconda::mafft=7.520"
@@ -20,7 +20,7 @@ process METRICS {
     def args = task.ext.args   ?: ''
     """
     mafft --auto ${fasta} > ${fasta.baseName}.aln
-    validate.sh ${fasta.baseName}.aln "${metric}"
+    val_gather.sh ${fasta.baseName}.aln "${metric}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

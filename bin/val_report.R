@@ -13,9 +13,9 @@ library(tidyr)
 # calculate global metrics
 global_metrics <- function(results_file, pairs_file, metric){
     if((file.exists(results_file) && file.exists(pairs_file))){
-        results <- read_csv(results_file) %>%
-          .$Result
-        n_missing_extra <- read_csv(pairs_file, col_names = F) %>%
+        df <- read_csv(results_file)
+        results <- df[,ncol(df)] %>% unlist()
+        n_missing_extra <- read_tsv(pairs_file, col_names = F) %>%
           rename(seq1=1,
                  seq2=2) %>%
           filter(seq1 == "null" | seq2 == "null") %>%
@@ -29,7 +29,7 @@ global_metrics <- function(results_file, pairs_file, metric){
     }else(return(data.frame("metric" = metric)))
 }
 
-acc <- global_metrics("accuracy_null_results.csv","accuracy_null_pairs.csv", "Accuracy")
+acc <- global_metrics("accuracy_results.csv","accuracy_pairs.csv", "Accuracy")
 inter <- global_metrics("precision_inter_results.csv","precision_inter_pairs.csv", "Inter-Assay Reproducility")
 intra <- global_metrics("precision_intra_results.csv","precision_intra_pairs.csv", "Intra-Assay Reproducility")
 

@@ -47,7 +47,7 @@ workflow ASSEMBLE {
             .out
             .consensus
             .transpose()
-            .map{ meta, consensus -> [meta, consensus.getSimpleName(), consensus] }
+            .map{ meta, consensus -> [meta, consensus.getSimpleName().replace(meta.id+'_', ''), consensus] }
             .set{ ch_consensus }
     }
 

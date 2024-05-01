@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# validate.sh v1.0
+# val_gather.sh v1.0
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
 
 #----- INPUTS -----#
