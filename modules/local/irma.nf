@@ -10,7 +10,7 @@ process IRMA {
     path module_template
 
     output:
-    tuple val(meta), path('results/*.fa'),     emit: consensus
+    tuple val(meta), path('*.fa'),     emit: consensus
     tuple val(meta), path('results/*.bam'),    emit: bam
     tuple val(meta), path('results/logs/'),    emit: logs
     tuple val(meta), path('results/figures/'), emit: figures
@@ -44,7 +44,7 @@ process IRMA {
         ref_id=\${file%.fasta}
         PREFIX="${prefix}_\${ref_id}"
 
-        cat \${f} | sed "s/>.*/>\${PREFIX}/g" > results/\${PREFIX}.fa
+        cat \${f} | sed "s/>.*/>\${PREFIX}/g" > \${PREFIX}.fa
     done
 
     # clean up
