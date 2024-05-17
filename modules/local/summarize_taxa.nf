@@ -11,7 +11,7 @@ process SUMMARIZE_TAXA {
     output:
     tuple val(meta), path("*.ref-summary.csv"),  emit: ref_summary, optional: true
     tuple val(meta), path("*.ref-list.csv"),     emit: ref_list
-    tuple val(meta), env(sm_summary),          emit: sm_summary
+    tuple val(meta), env(sm_summary),            emit: sm_summary
     tuple val(meta), path("*.jpg"),              emit: plots, optional: true
 
 
@@ -33,7 +33,7 @@ process SUMMARIZE_TAXA {
     then
         ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.gen_frac}" "${params.cov_plot ? 'TRUE' : 'FALSE' }"
     else
-        touch ${prefix}.ref-list.csv        
+        echo 'none_selected' > ${prefix}.ref-list.csv        
     fi
 
     #---- TAXA SUMMARY ----#

@@ -160,11 +160,13 @@ workflow VAPER {
         .samtoolstats2tbl
         .join(ASSEMBLE.out.nextclade, by: [0,1])
         .set{ ch_assembly_list }
-
     // Create channel of samples with no reference
+    if(! CLASSIFY.out.ref_list){
+        println "Oh no! All your samples failed! :("
+    }
     ch_reads
         .map{ meta, reads -> [ meta ] }
-        .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }, by: 0, remainder: true)
+        .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }.ifEmpty([null,null]), by: 0, remainder: true)
         .filter{ meta, ref_id -> ref_id == null}
         .map{ meta, ref_id -> [ meta, "No_Reference", [], [] ] }
         .set{ ch_no_assembly_list }

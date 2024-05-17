@@ -83,9 +83,6 @@ workflow CLASSIFY {
             false
         )
 
-        // Set ch_seq from reads (fast mode) to contigs (accurate mode)
-        SHOVILL.out.contigs.set{ ch_seq }
-
         // Set reference list & reference composition summary
         MINIMAP2_ALIGN.out.paf.set{ ch_ref_list }
         FORMAT_REFS.out.refs_comp.set{ ch_refs_comp }
@@ -134,13 +131,13 @@ workflow CLASSIFY {
         ch_taxa_sample,
         ch_refs_comp.first()
     )
-
     // Update reference list
     SUMMARIZE_TAXA
         .out
         .ref_list
         .splitCsv(header: false, elem: 1)
-        .map{ meta, ref -> [ meta, file(ref.get(0)).baseName ] }
+        .transpose()
+        .map{ meta, ref -> [ meta, file(ref).getBaseName() ] }
         .combine(ch_refs.map{ meta, ref -> [ meta.id, params.mode == "accurate" ? file(ref).baseName : meta.id, ref ] }, by: 1)
         .map{ index, meta, ref_id, ref -> [ meta, ref_id, ref ] }
         .set{ ch_ref_list }
