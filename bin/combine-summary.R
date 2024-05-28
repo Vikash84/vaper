@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 
+#----- LIBRARIES -----#
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -10,10 +11,21 @@ library(readr)
 library(dplyr)
 library(tidyr)
 
+#----- ARGUMENTS -----#
+# load args
+args <- commandArgs(trailingOnly=T)
+min_depth <- args[1]
+min_genfrac <- args[2]
+
+#----- CREATE EMPTY DATAFRAME -----#
 # set expected columns & create empty dataframe
 col.list <- c("ID",
+         "TAXA",
+         "SEGMENT",
          "REFERENCE",
+         "ASSEMBLY_NC",
          "ASSEMBLY_QC",
+         "ASSEMBLY_QC_REASON",
          "ASSEMBLY_LENGTH",
          "REF_LENGTH",
          "ASSEMBLY_EST_DEPTH",
@@ -23,6 +35,7 @@ col.list <- c("ID",
          "ASSEMBLY_INS",
          "ASSEMBLY_MISSING",
          "ASSEMBLY_NON_ATCGN",
+         "ASSEMBLY_TERMINAL_GAPS",
          "READS_MAPPED",
          "BASES_MAPPED",
          "MEAN_MAPPED_READ_LENGTH",
@@ -44,19 +57,40 @@ df.empty <- matrix(ncol = length(col.list), nrow = 1) %>%
   data.frame()
 colnames(df.empty) <- col.list
 
+#----- LOAD SUMMARY LINES ----#
 # get list of summary lines
 files <- list.files("./", pattern = ".csv", full.names = T)
 # combine all lines
 df <- do.call(bind_rows, lapply(files, FUN=read.csv)) %>%
   bind_rows(df.empty)
-# calculate depth of coverage, if any of the samples mapped
-if("BASES_MAPPED" %in% colnames(df)){
-  df <- df %>%
-    mutate(ASSEMBLY_EST_DEPTH = round(BASES_MAPPED / ASSEMBLY_LENGTH, digits = 0))
-}
+
+
+#----- GATHER FINAL METRICS -----#
+# depth of coverage
+df <- df %>%
+  mutate(ASSEMBLY_EST_DEPTH = round(BASES_MAPPED / ASSEMBLY_LENGTH, digits = 0))
+# QC status
+df <- df %>%
+  mutate(ASSEMBLY_QC_REASON = '',
+         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_EST_DEPTH < as.numeric(min_depth) ~ 'Low depth of coverage',
+                                        TRUE ~ ASSEMBLY_QC_REASON),
+         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_GEN_FRAC < as.numeric(min_genfrac) ~ paste(ASSEMBLY_QC_REASON, 'Low genome fraction', sep = "; "),
+                                        TRUE ~ ASSEMBLY_QC_REASON),       
+         ASSEMBLY_QC = case_when(ASSEMBLY_QC_REASON == '' ~ 'PASS',
+                                 TRUE ~ 'FAIL'),
+         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_NC == 'mediocre' | ASSEMBLY_NC == 'bad' ~ paste(ASSEMBLY_QC_REASON, "WARNING: Nextclade QC rating was '",ASSEMBLY_NC,"'", sep = '; '),
+                                        TRUE ~ ASSEMBLY_QC_REASON),
+         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '^; ', replacement = ''),
+         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '; $', replacement = ''))
+# summarize assembly variants
+df <- df %>%
+  group_by(TAXA, SEGMENT) %>%
+  mutate(ASSEMBLY_VARIANT = paste0(row_number()," / ", n()))
+
 # order columns
 df <- df %>%
   drop_na(ID) %>%
-  select(col.list)
+  select(col.list) %>%
+  select(-ASSEMBLY_NC)
 # save combined summary
 write.csv(x=df, file="combined-summary.csv", quote = F, row.names = F)

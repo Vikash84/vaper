@@ -15,6 +15,6 @@ process COMBINE_SUMMARYLINES {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     # combine summaries
-    combine-summary.R
+    combine-summary.R "${params.qc_depth}" "${params.qc_genfrac}"
     """
 }

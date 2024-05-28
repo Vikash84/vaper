@@ -8,8 +8,9 @@ TMP=/tmp		# the scratch/tmpfs for working on the assemblies
 ### REFERENCE ###
 MIN_FA=1		# no alternative reference [0..1]
 MIN_CA=20		# minimum count for alternative finished assembly
-SKIP_E=0		# skip reference elongation
+SKIP_E=1		# skip reference elongation
 REF_SET=$DEF_SET	# Same as the "consensus.fasta" in the reference folder for the module.
+ASSEM_REF=0      # start with same reference set for the final assembly, sort if custom file
 
 ### READ GATHERING ###
 MAX_ROUNDS=5		# round of read gathering
@@ -40,7 +41,10 @@ ASSEM_PROC=20		# grid maximum processes for assembly
 INS_T=0.25		# minimum frquenncy threshold for insertion refinement
 DEL_T=0.60		# minimum frequency threshold for deletion refinement 
 MIN_AMBIG=0.25		# minimum called SNV frequency for mixed base in amended consensus folder
-
+ALIGN_AMENDED=0          # do global alignment of the amended consensus to the HMM profile
+PADDED_CONSENSUS=0      # attempt to pad amended_consensus with Ns for amplicaton dropout: requires ALIGN_AMENDED=1 and ASSEM_REF=1
+MIN_CONS_SUPPORT=1      # consensus allele minimum count, used to amend final consensus as 'N' if support fails. Blank is off.
+MIN_CONS_QUALITY=0      # consensus allele minimum average quality, used to amend final consensus as 'N' if threshold fails. Blank is off.
 
 ### VARIANT CALLING ###
 # HEURISTICS

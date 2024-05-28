@@ -182,7 +182,8 @@ workflow VAPER {
 
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list
+       all_list,
+       file(params.refs, checkIfExists: true)
     )
 
     // MODULE: Combine summarylines

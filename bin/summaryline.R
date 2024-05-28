@@ -18,9 +18,16 @@ samtoolstats2tbl <- args[3]
 nextclade <- args[4]
 sample <- args[5]
 ref <- args[6]
+refsheet <- args[7]
+
+df.refs <- read_csv(args[7]) %>%
+  rename(TAXA = taxa,
+         SEGMENT = segment) %>%
+  mutate(REFERENCE = sub('\\..*$', '', basename(assembly)))
 
 #----- Sample ID & Reference
-df.summaryline <- data.frame(ID = sample, REFERENCE = ref)
+df.summaryline <- data.frame(ID = sample, REFERENCE = ref) %>%
+  left_join(df.refs, by = "REFERENCE")
 
 #----- Full Read Stats -----#
 df.fastp2tbl <- read_csv(fastp2tbl)
@@ -43,8 +50,9 @@ if(file.exists(nextclade)){
              totalNonACGTNs,
              coverage,
              ASSEMBLY_LENGTH,
-             REF_LENGTH) %>%
-      rename(ASSEMBLY_QC = qc.overallStatus,
+             REF_LENGTH,
+             ASSEMBLY_TERMINAL_GAPS) %>%
+      rename(ASSEMBLY_NC = qc.overallStatus,
              ASSEMBLY_SUBS = totalSubstitutions,
              ASSEMBLY_DEL = totalDeletions,
              ASSEMBLY_INS = totalInsertions,

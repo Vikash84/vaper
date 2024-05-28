@@ -22,16 +22,16 @@ process SUMMARIZE_TAXA {
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
     #---- REFERENCE SELECTION: FAST ----#
-    if [ "${params.mode}" == "fast" ]
+    if [ "${params.ref_mode}" == "fast" ]
     then
-        zcat ${ref_info} | awk -F ',' -v d=${params.avg_depth} -v g=${params.gen_frac} 'NR > 1 && \$3 >= g && \$6*2 >= d {print \$9}' > ${prefix}.ref-list.csv
+        zcat ${ref_info} | awk -F ',' -v d=${params.qc_depth} -v g=${params.ef_genfrac} 'NR > 1 && \$3 >= g && \$6*2 >= d {print \$9}' > ${prefix}.ref-list.csv
         cp ${ref_info} ${prefix}.ref-summary.csv
     fi
 
     #---- REFERENCE SELECTION: ACCURATE ----#
-    if [ "${params.mode}" == "accurate" ] && [ -s ${ref_info} ]
+    if [ "${params.ref_mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
-        ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.gen_frac}" "${params.cov_plot ? 'TRUE' : 'FALSE' }"
+        ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
     else
         echo 'none_selected' > ${prefix}.ref-list.csv        
     fi

@@ -11,8 +11,8 @@ process NEXTCLADE_RUN {
     tuple val(meta), val(ref_id), path(consensus), path(ref), path(config)
 
     output:
-    tuple val(meta), val(ref_id), path("${prefix}.len.tsv"), emit: tsv
-    path "versions.yml"                                    , emit: versions
+    tuple val(meta), val(ref_id), path("${prefix}.metrics.tsv"), emit: tsv
+    path "versions.yml"                                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,10 +31,11 @@ process NEXTCLADE_RUN {
         --output-basename "${prefix}" \\
         ${consensus}
 
-    # add assembly & reference length to output
+    # add extra metrics
     echo "ASSEMBLY_LENGTH" > CON_LENGTH && cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> CON_LENGTH
     echo "REF_LENGTH" > REF_LENGTH && cat ${ref} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> REF_LENGTH
-    paste ${prefix}.tsv CON_LENGTH REF_LENGTH > ${prefix}.len.tsv
+    echo "ASSEMBLY_TERMINAL_GAPS" > TERMINAL_GAPS && cat ${prefix}.aligned.fasta | grep -oE '^[-]+|[-]+\$' | tr -d '\n\r\t ' | wc -c >> TERMINAL_GAPS
+    paste ${prefix}.tsv CON_LENGTH REF_LENGTH TERMINAL_GAPS > ${prefix}.metrics.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

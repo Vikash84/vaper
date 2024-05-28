@@ -54,9 +54,9 @@ workflow CLASSIFY {
         REFERENCE SELECTION: ACCURATE
     =============================================================================================================================
     */
-    if (params.mode == "accurate"){
+    if (params.ref_mode == "accurate"){
         ch_refs
-            .map{ meta, refs -> refs }
+            .map{ meta, segment, assembly -> assembly }
             .collect()
             .map{ assembly -> [ assembly ] }
             .set{ ch_ref_assemblies }
@@ -94,11 +94,11 @@ workflow CLASSIFY {
         REFERENCE SELECTION: FAST
     =============================================================================================================================
     */
-    if (params.mode == "fast"){
+    if (params.ref_mode == "fast"){
 
         // MODULE: Reference sketches
         SM_SKETCH_REF (
-            ch_refs
+            ch_refs.map{meta, segment, assembly -> [ meta, assembly ]}
         )
 
         // MODULE: Run Sourmash gather against the reference pool using the forward reads
@@ -131,15 +131,16 @@ workflow CLASSIFY {
         ch_taxa_sample,
         ch_refs_comp.first()
     )
+
     // Update reference list
     SUMMARIZE_TAXA
         .out
         .ref_list
         .splitCsv(header: false, elem: 1)
         .transpose()
-        .map{ meta, ref -> [ meta, file(ref).getBaseName() ] }
-        .combine(ch_refs.map{ meta, ref -> [ meta.id, params.mode == "accurate" ? file(ref).baseName : meta.id, ref ] }, by: 1)
-        .map{ index, meta, ref_id, ref -> [ meta, ref_id, ref ] }
+        .map{ meta, ref -> [ meta, file(ref).getSimpleName() ] }
+        .combine(ch_refs.map{ meta, segment, ref -> [ meta.id, params.ref_mode == "accurate" ? file(ref).getSimpleName() : meta.id, ref ] }, by: 1)
+        .map{ index, meta, ref_id, ref -> [ meta, index, ref ] }
         .set{ ch_ref_list }
 
     // Create Sourmash summary channel
@@ -154,7 +155,7 @@ workflow CLASSIFY {
         - Downloads NCBI assembly for all Sourmash hits and adds them to the reference list
     =============================================================================================================================
     */
-    if (params.kitchen_sink){
+    if (params.ref_kitchensink){
 
         SM2REFS (
         ch_sm_summary

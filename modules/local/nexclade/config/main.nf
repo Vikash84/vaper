@@ -21,7 +21,7 @@ process NEXTCLADE_CONFIG {
     """
     # concat reference contigs
     echo ">${ref_id}" > ref.fa
-    cat ${reference} | grep -v ">" | tr -d '\n\t\r ' >> ref.fa
+    zcat ${reference} | grep -v ">" | tr -d '\n\t\r ' >> ref.fa
     # Calculate QC metrics based on the reference length
     len=\$(cat ref.fa | grep -v '>' | tr -d '\t\n\r' | wc -c)
     miss_th=\$(echo \${len} | awk -v var=$params.nc_miss '{print int(var*\$0)}')

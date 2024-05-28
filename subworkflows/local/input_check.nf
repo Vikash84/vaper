@@ -65,8 +65,14 @@ def create_ref_channel(LinkedHashMap row) {
     meta.id = row.taxa
     meta.single_end = true
 
+    // check reference assemblies
+    def ref = file(row.assembly, checkIfExists: true)
+    if ( ref.getExtension() != 'gz' ) {
+        exit 1, "ERROR: Reference assemblies must be gzip compressed. Please fix ${ref}"
+    }
+
     // add path of reference assembly to the meta map
-    def refs = [meta, file(row.assembly, checkIfExists: true)]
+    def refs = [ meta, row.segment, ref ]
 
     return refs
 }

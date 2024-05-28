@@ -26,7 +26,7 @@ workflow ASSEMBLE {
     =============================================================================================================================
     */
     
-    if (params.consensus_assembler == "irma"){
+    if (params.cons_assembler == "irma"){
         // MODULE: Run IRMA
         IRMA (
             ref_list.groupTuple(by:0).map{ meta, ref_ids, ref_paths, reads -> [ meta, ref_paths, reads.get(0) ]},
@@ -41,7 +41,7 @@ workflow ASSEMBLE {
             .out
             .bam
             .transpose()
-            .map{ meta, bam -> [meta, bam.getSimpleName(), bam] }
+            .map{ meta, bam -> [ meta, bam.getSimpleName(), bam ] }
             .set{ ch_bam }
         IRMA
             .out
@@ -50,7 +50,6 @@ workflow ASSEMBLE {
             .map{ meta, consensus -> [meta, consensus.getSimpleName().replace(meta.id+'_', ''), consensus] }
             .set{ ch_consensus }
     }
-
     
     /* 
     =============================================================================================================================
@@ -58,7 +57,7 @@ workflow ASSEMBLE {
     =============================================================================================================================
     */
 
-    if (params.consensus_assembler == "ivar"){
+    if (params.cons_assembler == "ivar"){
         // MODULE: Run BWA MEM
         BWA_MEM (
             ref_list
