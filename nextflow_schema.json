@@ -370,7 +370,7 @@
             "type": "string",
             "default": "accurate",
             "fa_icon": "fas fa-tachometer-alt",
-            "description": "Reference selection mode ('accurate' or 'fast'). Accurate mode selects references by aligning contigs from a de novo assembly to the supplied references using Minimap2. Fast mode selects references using Sourmash."
+            "description": "Reference selection mode ('accurate' or 'fast'). Accurate mode selects references by aligning contigs from a de novo assembly to the supplied references using Minimap2. Fast mode selects references using Sourmash. Fast mode is experimental and should be used with caution. It is much less accurate and sensitive than the accuracte mode and is only faster when you have a very large number of samples."
         },
         "ref_genfrac": {
             "type": "number",

@@ -24,14 +24,14 @@ process SUMMARIZE_TAXA {
     #---- REFERENCE SELECTION: FAST ----#
     if [ "${params.ref_mode}" == "fast" ]
     then
-        zcat ${ref_info} | awk -F ',' -v d=${params.qc_depth} -v g=${params.ef_genfrac} 'NR > 1 && \$3 >= g && \$6*2 >= d {print \$9}' > ${prefix}.ref-list.csv
-        cp ${ref_info} ${prefix}.ref-summary.csv
-    fi
+        zcat ${ref_info} | awk -F ',' -v d=${params.qc_depth} -v g=${params.ref_genfrac} 'NR > 1 && \$3 >= g && \$6*2 >= d {print \$9}' > ${prefix}.ref-list.csv
+        zcat ${ref_info} > ${prefix}.ref-summary.csv
 
     #---- REFERENCE SELECTION: ACCURATE ----#
-    if [ "${params.ref_mode}" == "accurate" ] && [ -s ${ref_info} ]
+    elif [ "${params.ref_mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
         ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
+    
     else
         echo 'none_selected' > ${prefix}.ref-list.csv        
     fi

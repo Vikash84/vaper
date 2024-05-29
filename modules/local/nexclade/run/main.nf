@@ -34,7 +34,7 @@ process NEXTCLADE_RUN {
     # add extra metrics
     echo "ASSEMBLY_LENGTH" > CON_LENGTH && cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> CON_LENGTH
     echo "REF_LENGTH" > REF_LENGTH && cat ${ref} | grep -v ">" | tr -d '\t\n\r ' | wc -c >> REF_LENGTH
-    echo "ASSEMBLY_TERMINAL_GAPS" > TERMINAL_GAPS && cat ${prefix}.aligned.fasta | grep -oE '^[-]+|[-]+\$' | tr -d '\n\r\t ' | wc -c >> TERMINAL_GAPS
+    echo "ASSEMBLY_TERMINAL_GAPS" > TERMINAL_GAPS && cat ${prefix}.aligned.fasta | grep -oE '^[-]+|[-]+\$' | tr -d '\n\r\t ' | wc -c >> TERMINAL_GAPS || true
     paste ${prefix}.tsv CON_LENGTH REF_LENGTH TERMINAL_GAPS > ${prefix}.metrics.tsv
 
     cat <<-END_VERSIONS > versions.yml

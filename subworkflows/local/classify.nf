@@ -4,7 +4,7 @@
 include { FORMAT_REFS                         } from '../../modules/local/format_refs'
 include { SHOVILL                             } from '../../modules/nf-core/shovill/main'
 include { MINIMAP2_ALIGN                      } from '../../modules/nf-core/minimap2/align/main'
-include { SOURMASH_SKETCH as SM_SKETCH_REF    } from '../../modules/nf-core/sourmash/sketch/main'
+include { SM_SKETCH_REF                       } from '../../modules/local/sourmash_sketch_ref'
 include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE } from '../../modules/nf-core/sourmash/sketch/main'
 include { SOURMASH_GATHER as SM_GATHER_SELECT } from '../../modules/nf-core/sourmash/gather/main'
 include { SOURMASH_GATHER as SM_GATHER_SAMPLE } from '../../modules/nf-core/sourmash/gather/main'
@@ -98,13 +98,13 @@ workflow CLASSIFY {
 
         // MODULE: Reference sketches
         SM_SKETCH_REF (
-            ch_refs.map{meta, segment, assembly -> [ meta, assembly ]}
+            ch_refs.map{meta, segment, assembly -> assembly }.collect()
         )
 
         // MODULE: Run Sourmash gather against the reference pool using the forward reads
         SM_GATHER_SELECT (
             SM_SKETCH_SAMPLE.out.signatures,
-            SM_SKETCH_REF.out.signatures.map{ meta, ref -> ref }.collect(),
+            SM_SKETCH_REF.out.signatures,
             false,
             false,
             false,
@@ -129,7 +129,7 @@ workflow CLASSIFY {
 
     SUMMARIZE_TAXA(
         ch_taxa_sample,
-        ch_refs_comp.first()
+        ch_refs_comp
     )
 
     // Update reference list
@@ -139,7 +139,7 @@ workflow CLASSIFY {
         .splitCsv(header: false, elem: 1)
         .transpose()
         .map{ meta, ref -> [ meta, file(ref).getSimpleName() ] }
-        .combine(ch_refs.map{ meta, segment, ref -> [ meta.id, params.ref_mode == "accurate" ? file(ref).getSimpleName() : meta.id, ref ] }, by: 1)
+        .combine(ch_refs.map{ meta, segment, ref -> [ meta.id, file(ref).getSimpleName(), ref ] }, by: 1)
         .map{ index, meta, ref_id, ref -> [ meta, index, ref ] }
         .set{ ch_ref_list }
 
