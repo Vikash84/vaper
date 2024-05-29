@@ -84,13 +84,15 @@
                     "fa_icon": "fas fa-chart-pie"
                 },
                 "ref_covplot": {
-                    "type": "string",
+                    "type": "boolean",
+                    "default": false,
                     "description": "Experimental feature that creates coverage plots for all mapped references.",
                     "fa_icon": "fas fa-chart-pie"
                 },
                 "ref_kitchensink": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Creates consensus assemblies for all species identified by sourmash. This option automatically downloads reference assemblies from NCBI using the 'datasets' tool. This can create a large number of assemblies and should be used with care.",
+                    "default":false,
                     "fa_icon": "fas fa-sink"
                 }
             },
@@ -163,8 +165,8 @@
                     "fa_icon": "fas fa-chart-pie"
                 },
                 "cons_elong": {
-                    "type": "string",
-                    "default": "true",
+                    "type": "boolean",
+                    "default": false,
                     "description": "Option to use elongation feature with IRMA. This is ignored for iVar.",
                     "fa_icon": "fas fa-chart-pie"
                 }
