@@ -129,7 +129,7 @@ workflow CLASSIFY {
 
     SUMMARIZE_TAXA(
         ch_taxa_sample,
-        ch_refs_comp
+        ch_refs_comp.first()
     )
 
     // Update reference list
