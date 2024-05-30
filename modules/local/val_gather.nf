@@ -11,6 +11,7 @@ process GATHER {
 
     output:
     tuple val(metric), val(precision_type), path("*.csv"),  emit: result
+    path "*.aln",                                           emit: aln
     path "versions.yml",                                    emit: versions
 
     when:

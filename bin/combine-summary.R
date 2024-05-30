@@ -23,6 +23,7 @@ col.list <- c("ID",
          "TAXA",
          "SEGMENT",
          "REFERENCE",
+         "ASSEMBLY_VARIANT",
          "ASSEMBLY_NC",
          "ASSEMBLY_QC",
          "ASSEMBLY_QC_REASON",
@@ -84,8 +85,9 @@ df <- df %>%
          ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '; $', replacement = ''))
 # summarize assembly variants
 df <- df %>%
-  group_by(TAXA, SEGMENT) %>%
-  mutate(ASSEMBLY_VARIANT = paste0(row_number()," / ", n()))
+  group_by(ID, TAXA, SEGMENT) %>%
+  mutate(ASSEMBLY_VARIANT = paste0(row_number()," of ", n())) %>%
+  ungroup()
 
 # order columns
 df <- df %>%
@@ -93,4 +95,4 @@ df <- df %>%
   select(col.list) %>%
   select(-ASSEMBLY_NC)
 # save combined summary
-write.csv(x=df, file="combined-summary.csv", quote = F, row.names = F)
+write.csv(x=df, file="combined-summary.csv", row.names = F)

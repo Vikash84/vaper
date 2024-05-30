@@ -39,15 +39,15 @@ S2=$(cat $ALN | grep '>' | sed -n 2p | tr -d '>\n')
 # Second sequence (S2) in the alignment is treated as the "sample"
 # True Positives (TP) = all sites in S2 that match S1
 # True Negative (TN) = does not apply
-# False Positives (FP) = sites in S2 that are absent in S1 (i.e., "A", "T", "C", or "G" in S2 and "-" in S1)
+# False Positives (FP) = sites in S2 that are absent in S1 (i.e., "A", "T", "C", or "G" in S2 and "-" in S1) or sites in S2 that differ from S1, excluding absent sites in S2
 # False Negative (FN) = sites in S1 that are absent in S2 (i.e., "A", "T", "C", or "G" in S1 and "-" in S2)
 # Accuracy = 100 * TP / (TP + FP + FN)
 
 if [[ "${METRIC}" == "accuracy" ]]
 then
     TP=$(cat transposed.txt | awk '$1 == $2 {print}' | wc -l)
-    FP=$(cat transposed.txt | awk '$1 == "-" {print}' | wc -l)
-    FN=$(cat transposed.txt | awk '$1 == "-" {print}' | wc -l)
+    FP=$(cat transposed.txt | awk '$2 != "-" && $1 != $2 {print}' | wc -l)
+    FN=$(cat transposed.txt | awk '$2 == "-" {print}' | wc -l)
 
     echo "Sample,Truth,TP,FP,FN,Result" > "${S2}_result.csv"
     echo -e "${S2}\t${S1}\t${TP}\t${FP}\t${FN}" | awk -v OFS=',' '{print $1,$2,$3,$4,$5, 100 * $3 / ($3+$4+$5)}' >> "${S2}_result.csv"

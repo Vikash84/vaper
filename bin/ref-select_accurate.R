@@ -27,7 +27,8 @@ paf <- read_tsv(paf_file, col_names = F) %>%
          LENGTH = 7,
          START = 8,
          END = 9,
-         ALIGN = 11) %>%
+         ALIGN = 11,
+         QUAL = 12) %>%
   mutate(ASSEMBLY=str_remove_all(TARGET, pattern="(\\d+$)"),
          CONTIG = str_extract(TARGET, "(\\d+$)")) %>%
   select(TARGET, ASSEMBLY, CONTIG, LENGTH, START, END, ALIGN)
