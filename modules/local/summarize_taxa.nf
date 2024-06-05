@@ -5,7 +5,7 @@ process SUMMARIZE_TAXA {
     container "docker.io/jdj0303/vaper-base:beta"
 
     input:
-    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz")
+    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz"), path(sm_meta)
     path refs_comp
 
     output:
@@ -37,9 +37,8 @@ process SUMMARIZE_TAXA {
     fi
 
     #---- TAXA SUMMARY ----#
-    zcat sm_gather.csv.gz > sm_gather.csv 
     # summarize taxa at >= 1X coverage and >= 1% relative abundance
-    sm_summary.R sm_gather.csv ${prefix}
+    sm_summary.R ${sm_meta} ${prefix}
     sm_summary=\$(cat ${prefix}.taxa-summary.csv)
     """
 }

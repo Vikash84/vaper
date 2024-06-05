@@ -21,21 +21,18 @@ df <- read_csv(sm_taxa)
 # create plot & summary
 if(nrow(df) > 0){
     df <- df %>%
-      filter(f_match > 0.1) %>%
-      mutate(rel_abund = 100*(average_abund / sum(average_abund)),
-             gen_frac = 100*f_match,
-             name = case_when(rel_abund < 1 ~ "Other",
-                              TRUE ~ name)) %>%
-            group_by(name) %>%
-            summarize(abund = sum(rel_abund), gen_frac = sum(gen_frac), depth = sum(average_abund)) %>%
-            ungroup() %>%
-            arrange(abund) %>%
-      mutate(name = factor(name, levels = name),
-             ymax = cumsum(abund),
+      filter(rank == 'species') %>%
+      mutate(Species = gsub(lineage, pattern = ".*;", replacement = "")) %>%
+      arrange(desc(fraction)) %>%
+      mutate(Species = factor(Species, levels = Species))
+    df.class <- df %>%
+      filter(lineage != 'unclassified') %>%
+      mutate(classified_percent = fraction / sum(fraction)) %>%
+      mutate(ymax = cumsum(classified_percent),
              ymin = c(0, head(ymax, n=-1)))
 
       # create plot & save
-      p <- ggplot(df, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=name))+
+      p <- ggplot(df.class, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Species))+
         geom_rect() +
         coord_polar(theta="y") +
         xlim(c(2, 4))+
@@ -46,16 +43,15 @@ if(nrow(df) > 0){
               axis.title.y=element_blank(),
               panel.background=element_blank(),
               panel.grid.major=element_blank(),
-              panel.grid.minor=element_blank(),
-              plot.background=element_blank())
+              panel.grid.minor=element_blank())
     ggsave(plot = p, filename = paste0(prefix,".taxa-plot.jpg"), dpi = 300, height = 10, width = 15)
 
     # create summaryline
     summaryline <- df %>%
-      filter(name != "Other") %>%
-      mutate(virus = paste0(name," (",round(gen_frac, digits =0),"%/",round(depth, digits = 0),"X)")) %>%
+      arrange(Species) %>%
+      mutate(virus = paste0(round(100*fraction, digits =1),"% ", Species)) %>%
       .$virus %>%
-      paste(collapse = ";") %>%
+      paste(collapse = "; ") %>%
       gsub(pattern = ",", replacement = "")
     write(x = summaryline, file = paste0(prefix,".taxa-summary.csv"))
 }else(write(x = "No Viruses Detected", file = paste0(prefix,".taxa-summary.csv")))
