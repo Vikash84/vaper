@@ -24,6 +24,7 @@
                 },
                 "refs": {
                     "type": "string",
+                    "default": "${baseDir}/assets/reference_sets/1716317527-epitome.tar.gz",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -106,12 +107,12 @@
             "properties": {
                 "denovo_assembler": {
                     "type": "string",
-                    "default": "spades",
+                    "default": "megahit",
                     "description": "De novo assembler for Shovill ('spades', 'megahit', 'velvet', 'skesa'')\""
                 },
                 "denovo_contigcov": {
                     "type": "integer",
-                    "default": 10,
+                    "default": 1,
                     "description": "Minimum depth of coverage for a contig to be retained in the de novo assembly."
                 },
                 "denovo_contiglen": {

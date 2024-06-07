@@ -10,7 +10,7 @@ process FORMAT_REFS {
     tuple path(ref_list), path(assemblies)
 
     output:
-    path "refs.fa",       emit: refs
+    path "refs.fa.gz",       emit: refs
     path "refs-comp.txt", emit: refs_comp
     path "versions.yml",  emit: versions
 
@@ -27,9 +27,10 @@ process FORMAT_REFS {
         seqtk rename tmp.fa \${ref##*/} >> refs.fa
     done
     rm tmp.fa
+    gzip refs.fa
 
     # get contig lengths
-    seqtk comp refs.fa > refs-comp.txt
+    seqtk comp refs.fa.gz > refs-comp.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

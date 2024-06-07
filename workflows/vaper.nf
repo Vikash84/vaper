@@ -35,17 +35,17 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // MODULE: Local modules
 //
-include { FASTP2TBL                   } from '../modules/local/fastp2tbl'
-include { SUMMARYLINE                 } from '../modules/local/create-summaryline'
-include { COMBINE_SUMMARYLINES        } from '../modules/local/combine-summary'
+include { FASTP2TBL            } from '../modules/local/fastp2tbl'
+include { SUMMARYLINE          } from '../modules/local/create-summaryline'
+include { COMBINE_SUMMARYLINES } from '../modules/local/combine-summary'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
-include { CLASSIFY } from '../subworkflows/local/classify'
-include { ASSEMBLE } from '../subworkflows/local/assemble'
-include { VALIDATE } from '../subworkflows/local/validate'
+include { CLASSIFY    } from '../subworkflows/local/classify'
+include { ASSEMBLE    } from '../subworkflows/local/assemble'
+include { VALIDATE    } from '../subworkflows/local/validate'
 
 
 /*
@@ -61,8 +61,6 @@ include { FASTQC                      } from '../modules/nf-core/fastqc/main'
 include { FASTP                       } from '../modules/nf-core/fastp/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
-
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,8 +79,7 @@ workflow VAPER {
     =============================================================================================================================
         PREPARE INPUT
     =============================================================================================================================
-    */ 
-
+    */
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     INPUT_CHECK (
         file(params.input),

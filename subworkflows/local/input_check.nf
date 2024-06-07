@@ -3,11 +3,13 @@
 //
 
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
+include { TAR2REFS          } from '../../modules/local/tar2refs'
+
 
 workflow INPUT_CHECK {
     take:
     samplesheet // file: /path/to/samplesheet.csv
-    refs        // file: /path/to/ref-list.csv
+    refs        // file: /path/to/ref-list.csv or ref-list.tar.gz
 
     main:
     // Create samplesheet channel
@@ -18,11 +20,33 @@ workflow INPUT_CHECK {
         .set { reads }
 
     // Create reference assembly channel
-    Channel
+    if (params.refs.endsWith('.tar.gz')){
+        // MODULE: Extract reference set from a tar.gz compressed file.
+        TAR2REFS (
+            file(params.refs)
+        )
+
+        TAR2REFS
+            .out
+            .refsheet
+            .splitCsv(header: true)
+            .map{ tuple(it.assembly, it.taxa, it.segment)  }
+            .join(TAR2REFS.out.refs.flatten().map{ assembly -> [ file(assembly).getName(), assembly ] }, by: 0)
+            .map{ name, taxa, segment, assembly -> [ taxa, segment, assembly ] }
+            .set{ refs }
+        Channel.of("taxa,segment,assembly")
+            .concat(refs.map{ taxa, segment, assembly -> taxa+','+segment+','+assembly })
+            .collectFile(name: "refsheet.csv", sort: 'index', newLine: true)
+            .splitCsv(header: true)
+            .map{ it -> create_ref_channel(it) }
+            .set{ refs }
+    }else {
+        Channel
         .fromPath(refs)
         .splitCsv( header: true, sep:',' )
         .map{ it -> create_ref_channel(it) }
         .set{ refs }
+    }
 
     emit:
     reads                                     // channel: [ val(meta), [ reads ] ]
