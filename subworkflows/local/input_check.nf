@@ -32,12 +32,7 @@ workflow INPUT_CHECK {
             .splitCsv(header: true)
             .map{ tuple(it.assembly, it.taxa, it.segment)  }
             .join(TAR2REFS.out.refs.flatten().map{ assembly -> [ file(assembly).getName(), assembly ] }, by: 0)
-            .map{ name, taxa, segment, assembly -> [ taxa, segment, assembly ] }
-            .set{ refs }
-        Channel.of("taxa,segment,assembly")
-            .concat(refs.map{ taxa, segment, assembly -> taxa+','+segment+','+assembly })
-            .collectFile(name: "refsheet.csv", sort: 'index', newLine: true)
-            .splitCsv(header: true)
+            .map{ name, taxa, segment, assembly -> [ taxa: taxa, segment: segment, assembly: assembly ] }
             .map{ it -> create_ref_channel(it) }
             .set{ refs }
     }else {
