@@ -2,8 +2,6 @@ process NEXTCLADE_CONFIG {
     tag "${prefix}"
     label 'process_low'
 
-    container 'docker.io/jdj0303/vaper-base:beta'
-
     input:
     tuple val(ref_id), path(reference)
     path db_template

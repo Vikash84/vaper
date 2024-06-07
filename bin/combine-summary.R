@@ -37,11 +37,12 @@ col.list <- c("ID",
          "ASSEMBLY_MISSING",
          "ASSEMBLY_NON_ATCGN",
          "ASSEMBLY_TERMINAL_GAPS",
+         "PERC_READS_MAPPED",
+         "PERC_BASES_MAPPED",
          "READS_MAPPED",
          "BASES_MAPPED",
          "MEAN_MAPPED_READ_LENGTH",
          "MEAN_MAPPED_READ_QUALITY",
-         "PERC_PAIRED_MAPPED_READS",
          "TOTAL_READS_CLEAN",
          "TOTAL_BASES_CLEAN",
          "READ1_MEAN_LENGTH_CLEAN",
@@ -67,9 +68,11 @@ df <- do.call(bind_rows, lapply(files, FUN=read.csv)) %>%
 
 
 #----- GATHER FINAL METRICS -----#
-# depth of coverage
+# depth of coverage & percent read/bp mapping
 df <- df %>%
-  mutate(ASSEMBLY_EST_DEPTH = round(BASES_MAPPED / ASSEMBLY_LENGTH, digits = 0))
+  mutate(ASSEMBLY_EST_DEPTH = round(as.numeric(BASES_MAPPED) / as.numeric(ASSEMBLY_LENGTH), digits = 0),
+         PERC_READS_MAPPED = round(100*as.numeric(READS_MAPPED) / as.numeric(TOTAL_READS_CLEAN), digits = 1),
+         PERC_BASES_MAPPED = round(100*as.numeric(BASES_MAPPED) / as.numeric(TOTAL_BASES_CLEAN),digits = 1))
 # QC status
 df <- df %>%
   mutate(ASSEMBLY_QC_REASON = '',
@@ -93,6 +96,8 @@ df <- df %>%
 df <- df %>%
   drop_na(ID) %>%
   select(col.list) %>%
-  select(-ASSEMBLY_NC)
+  select(-ASSEMBLY_NC,
+         -READS_MAPPED,
+         -BASES_MAPPED)
 # save combined summary
 write.csv(x=df, file="combined-summary.csv", row.names = F)

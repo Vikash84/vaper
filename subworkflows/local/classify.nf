@@ -1,17 +1,17 @@
 //
 // Check input samplesheet and get read channels
 //
-include { FORMAT_REFS                         } from '../../modules/local/format_refs'
-include { SHOVILL                             } from '../../modules/nf-core/shovill/main'
-include { MINIMAP2_ALIGN                      } from '../../modules/nf-core/minimap2/align/main'
-include { SM_SKETCH_REF                       } from '../../modules/local/sourmash_sketch_ref'
-include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE } from '../../modules/nf-core/sourmash/sketch/main'
-include { SOURMASH_GATHER as SM_GATHER_SELECT } from '../../modules/nf-core/sourmash/gather/main'
-include { SOURMASH_GATHER as SM_GATHER_SAMPLE } from '../../modules/nf-core/sourmash/gather/main'
-include { SOURMASH_METAGENOME as SM_META      } from '../../modules/nf-core/sourmash/metagenome/main'
-include { SUMMARIZE_TAXA                      } from '../../modules/local/summarize_taxa'
-include { SM2REFS                             } from '../../modules/local/sm2refs'
-include { NCBI_DATASETS                       } from '../../modules/local/ncbi-datasets'
+include { FORMAT_REFS                           } from '../../modules/local/format_refs'
+include { SHOVILL                               } from '../../modules/nf-core/shovill/main'
+include { MINIMAP2_ALIGN                        } from '../../modules/nf-core/minimap2/align/main'
+include { SM_SKETCH_REF                         } from '../../modules/local/sourmash_sketch_ref'
+include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE   } from '../../modules/nf-core/sourmash/sketch/main'
+include { SOURMASH_GATHER as SM_GATHER_SELECT   } from '../../modules/nf-core/sourmash/gather/main'
+include { SOURMASH_GATHER as SM_GATHER_SAMPLE   } from '../../modules/nf-core/sourmash/gather/main'
+include { SOURMASH_METAGENOME as SM_META_SAMPLE } from '../../modules/nf-core/sourmash/metagenome/main'
+include { SUMMARIZE_TAXA                        } from '../../modules/local/summarize_taxa'
+include { SM2REFS                               } from '../../modules/local/sm2refs'
+include { NCBI_DATASETS                         } from '../../modules/local/ncbi-datasets'
 
 
 workflow CLASSIFY {
@@ -51,7 +51,7 @@ workflow CLASSIFY {
     )
 
     // MODULE: Summarize taxa from sourmash gather
-    SM_META(
+    SM_META_SAMPLE (
         SM_GATHER_SAMPLE.out.result,
         file(params.sm_taxa, checkIfExists: true)
     )
@@ -132,7 +132,7 @@ workflow CLASSIFY {
     // combine reference mapping, sample taxonomy, and reference taxonomy
     ch_ref_list
         .join(SM_GATHER_SAMPLE.out.result)
-        .join(SM_META.out.result)
+        .join(SM_META_SAMPLE.out.result)
         .set{ ch_taxa_sample }
 
     SUMMARIZE_TAXA(
