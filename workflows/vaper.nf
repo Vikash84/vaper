@@ -179,8 +179,8 @@ workflow VAPER {
 
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list,
-       file(params.refs, checkIfExists: true)
+       all_list
+           .combine(ch_refs.map{ meta, segment, assembly -> meta.id+","+segment+","+assembly }.collectFile(name: "refsheet.csv", newLine: true))
     )
 
     // MODULE: Combine summarylines

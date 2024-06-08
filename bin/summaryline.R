@@ -21,9 +21,10 @@ ref <- args[6]
 refsheet <- args[7]
 
 df.refs <- read_csv(args[7]) %>%
-  rename(TAXA = taxa,
-         SEGMENT = segment) %>%
-  mutate(REFERENCE = sub('\\..*$', '', basename(assembly)))
+  rename(TAXA = 1,
+         SEGMENT = 2,
+         REFERENCE = 3) %>%
+  mutate(REFERENCE = sub('\\..*$', '', basename(REFERENCE)))
 
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref) %>%
