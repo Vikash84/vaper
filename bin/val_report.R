@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# val_report.R
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]

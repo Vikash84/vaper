@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# nc-qc-config.sh v1.0
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
+#------ REQUIREMENTS -----#
 # check that jq is installed
 if ! command -v jq &> /dev/null
 then
@@ -7,7 +11,7 @@ then
     exit 1
 fi
 
-# help message
+#----- HELP -----#
 if [[ -z "$1" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "-help" ]] || [[ "$1" == "--help" ]]
 then
     echo "nc-qc-config.sh [input file] [output file] [missingDataThreshold] [missingData.scoreBias] [mixedSitesThreshold]"

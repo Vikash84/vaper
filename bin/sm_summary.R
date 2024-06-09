@@ -1,4 +1,9 @@
-#!/usr/bin/env Rscript
+#!/usr/bin/env 
+
+version <- "1.0"
+
+# sm_summary.R
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
 
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr","ggplot2")
@@ -15,6 +20,12 @@ library(ggplot2)
 args <- commandArgs(trailingOnly=T)
 sm_taxa <- args[1]
 prefix <- args[2]
+
+#---- VERSION ----#
+if(args[1] == "version"){
+  cat(version, sep = "\n")
+  quit(status=0)
+}
 
 # load sourmash data
 df <- read_csv(sm_taxa)

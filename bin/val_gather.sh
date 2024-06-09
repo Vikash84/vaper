@@ -3,12 +3,12 @@
 # val_gather.sh v1.0
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
 
+#----- HELP -----#
+[ -z $1 ] && echo "val_gather.sh [path/to/alignment/file] [accuracy|precision] [prefix]" && exit
+
 #----- INPUTS -----#
 ALN=$1
 METRIC=$2
-
-# Help
-[ -z $ALN ] && echo "validate.sh [path/to/alignment/file] [accuracy|precision] [prefix]" && exit
 
 # Check that the alignment exists and only has two sequences
 ! [ -f $ALN ] && echo "Error: Please supply a valid alignment file path." && exit 1

@@ -1,5 +1,10 @@
 #!/usr/bin/env Rscript
 
+version <- "1.0"
+
+# combine-summary.R
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
 #----- LIBRARIES -----#
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr")
@@ -16,6 +21,12 @@ library(tidyr)
 args <- commandArgs(trailingOnly=T)
 min_depth <- args[1]
 min_genfrac <- args[2]
+
+#---- VERSION ----#
+if(args[1] == "version"){
+  cat(version, sep = "\n")
+  quit(status=0)
+}
 
 #----- CREATE EMPTY DATAFRAME -----#
 # set expected columns & create empty dataframe

@@ -1,5 +1,10 @@
 #!/usr/bin/env Rscript
 
+version <- "1.0"
+
+# summaryline.R
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -19,6 +24,12 @@ nextclade <- args[4]
 sample <- args[5]
 ref <- args[6]
 refsheet <- args[7]
+
+#---- VERSION ----#
+if(args[1] == "version"){
+  cat(version, sep = "\n")
+  quit(status=0)
+}
 
 df.refs <- read_csv(args[7]) %>%
   rename(TAXA = 1,
