@@ -1,2 +1,2 @@
 sample,fastq_1,fastq_2
-SRR28752485,SRR28752485_1.fastq.gz,SRR28752485_2.fastq.gz
+SRR28752485,https://github.com/DOH-JDJ0303/vaper/blob/0a978bff822772b785ce6883b988c1f392cabba6/assets/test/SRR28752485_1.fastq.gz,https://github.com/DOH-JDJ0303/vaper/blob/0a978bff822772b785ce6883b988c1f392cabba6/assets/test/SRR28752485_2.fastq.gz
