@@ -1,6 +1,4 @@
-#!/usr/bin/env 
-
-version <- "1.0"
+#!/usr/bin/env Rscript
 
 # sm_summary.R
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
@@ -9,24 +7,15 @@ version <- "1.0"
 list.of.packages <- c("readr", "dplyr","tidyr","ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
-
 # load packages
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-
 # load args
 args <- commandArgs(trailingOnly=T)
 sm_taxa <- args[1]
 prefix <- args[2]
-
-#---- VERSION ----#
-if(args[1] == "version"){
-  cat(version, sep = "\n")
-  quit(status=0)
-}
-
 # load sourmash data
 df <- read_csv(sm_taxa)
 # create plot & summary
@@ -77,4 +66,3 @@ if(nrow(df) > 0){
       gsub(pattern = ",", replacement = "")
     write(x = summaryline, file = paste0(prefix,".taxa-summary.csv"))
 }else(write(x = "No Viruses Detected", file = paste0(prefix,".taxa-summary.csv")))
-     

@@ -1,5 +1,8 @@
 #!/usr/bin/env Rscript
 
+# ref-select_accurate.R
+# Author: Jared Johnson, jared.johnson@doh.wa.gov
+
 # check for required packages
 list.of.packages <- c("readr", "dplyr","tidyr","stringr","patchwork","ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
