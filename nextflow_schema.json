@@ -24,7 +24,7 @@
                 },
                 "refs": {
                     "type": "string",
-                    "default": "${baseDir}/assets/reference_sets/1716317527-epitome.tar.gz",
+                    "default": "${baseDir}/assets/reference_sets/1718026015-epitome_95.tar.gz",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
