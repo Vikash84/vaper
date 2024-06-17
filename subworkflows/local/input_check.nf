@@ -30,7 +30,7 @@ workflow INPUT_CHECK {
             .out
             .refsheet
             .splitCsv(header: true)
-            .map{ tuple(it.assembly, it.taxa, it.segment)  }
+            .map{ tuple(file(it.assembly).getName(), it.taxa, it.segment)  }
             .join(TAR2REFS.out.refs.flatten().map{ assembly -> [ file(assembly).getName(), assembly ] }, by: 0)
             .map{ name, taxa, segment, assembly -> [ taxa: taxa, segment: segment, assembly: assembly ] }
             .map{ it -> create_ref_channel(it) }
