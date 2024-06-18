@@ -79,6 +79,7 @@ plot_list <- paf %>%
   unique()
 # determine if plots should be made 
 if(length(plot_list) > 0 & as.character(plot_logic) == "TRUE"){
+  n_plots <- length(plot_list)
   plots <- lapply(plot_list, FUN = make_plot)
   p <- wrap_plots(plots, ncol = 1, nrow = n_plots)
   ggsave(plot = p, file = paste0(sample,".ref-genfrac.jpg"), dpi = 300, width = 10, height = 2*n_plots, limitsize = F)
