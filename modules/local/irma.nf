@@ -31,21 +31,30 @@ process IRMA {
     mod=\$(shuf -er -n20  {A..Z} {a..z} {0..9} | tr -d '\n')
     mv ${module_template} \${irma_path}_RES/modules/\${mod}
 
-    # apply quality controls
+    # apply config options
     ## choose an assembly type
     case "${params.cons_type}" in
-        'default')
-            echo 'Will return default assembly. No updates added to QC'
+        'plurality')
+            echo 'Returning plurality assembly'
+            assembly_path='results/'
+            assembly_ext=".fasta" 
+            ;;
+        'amended')
+            echo 'Returning amended assembly'
+            assembly_path='results/amended_consensus/results-'
+            assembly_ext=".fa" 
             ;;
         'padded')
             echo -e 'ASSEM_REF=1\nALIGN_AMENDED=1\nPADDED_CONSENSUS=1' >> irma.config
+            assembly_path='results/amended_consensus/results-'
+            assembly_ext=".pad.fa"
             ;;
         *)
-            echo "ERROR: '--cons_type' must be 'default' or 'padded'" && exit 1
+            echo "ERROR: '--cons_type' must be 'plurality', 'amended', or 'padded'" && exit 1
             ;;
     esac
-    # set QC thresholds
-    echo -e 'MIN_CONS_SUPPORT=${params.cons_depth}\nMIN_CONS_QUALITY=${params.cons_qual}\nDEL_TYPE=${ params.cons_amb == 'N' ? 'NNN' : params.cons_amb }' >> irma.config
+    ## set QC thresholds
+    echo -e 'MIN_AMBIG=${params.cons_ratio}\nMIN_CONS_SUPPORT=${params.cons_depth}\nMIN_CONS_QUALITY=${params.cons_qual}\nDEL_TYPE=${ params.cons_amb == 'N' ? 'NNN' : params.cons_amb }' >> irma.config
     # set elongation option
     echo -e 'SKIP_E=${ params.cons_elong ? '1' : '0' }' >> irma.config
          
@@ -72,7 +81,7 @@ process IRMA {
         PREFIX="${prefix}_\${REF_ID}"
 
         # return fasta 
-        assembly="${ params.cons_type == 'padded' ? "results/amended_consensus/results-\${REF_ID}.pad.fa" : "results/\${REF_ID}.fasta" }"
+        assembly="\${assembly_path}\${REF_ID}\${assembly_ext}"
         cat \${assembly} > \${PREFIX}.fa
     done
 

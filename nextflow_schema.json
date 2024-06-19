@@ -138,7 +138,7 @@
                 "cons_type": {
                     "type": "string",
                     "default": "default",
-                    "description": "Which consensus assembly version should be returned ('defaul' or 'padded'). Padded assemblies replace putative low-quality regions with N's. This option only applies to IRMA (ignored by iVar).",
+                    "description": "The consensus assembly version that should be returned: 'plurality', 'amended', or 'padded' (default: 'amended'). This option only applies to IRMA (ignored by iVar).",
                     "fa_icon": "far fa-copy"
                 },
                 "cons_qual": {
