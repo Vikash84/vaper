@@ -4,7 +4,6 @@ process IRMA {
     stageInMode 'copy'
     
     container "docker.io/staphb/irma:1.1.4"
-    //containerOptions = "${ workflow.containerEngine == 'singularity' || workflow.containerEngine == 'apptainer' ? '--writable-tmpfs' : '' }"
 
     input:
     tuple val(meta), path(refs), path(reads)
@@ -58,7 +57,7 @@ process IRMA {
     esac
     ## set QC thresholds
     echo -e 'MIN_AMBIG=${params.cons_ratio}\nMIN_CONS_SUPPORT=${params.cons_depth}\nMIN_CONS_QUALITY=${params.cons_qual}\nDEL_TYPE=${ params.cons_amb == 'N' ? 'NNN' : params.cons_amb }' >> irma.config
-    # set elongation option
+    ## set elongation option
     echo -e 'SKIP_E=${ params.cons_elong ? '1' : '0' }' >> irma.config
          
     # combine references into single file
@@ -89,6 +88,6 @@ process IRMA {
     done
 
     # clean up
-    rm -r \${irma_path}_RES/modules/\${mod}
+    #rm -r \${irma_path}_RES/modules/\${mod}
     """
 }
