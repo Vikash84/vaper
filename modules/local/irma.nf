@@ -4,7 +4,7 @@ process IRMA {
     stageInMode 'copy'
     
     container "docker.io/staphb/irma:1.1.4"
-    containerOptions = "${ workflow.containerEngine == 'singularity' || workflow.containerEngine == 'apptainer' ? '--writable-tmpfs' : '' }"
+    //containerOptions = "${ workflow.containerEngine == 'singularity' || workflow.containerEngine == 'apptainer' ? '--writable-tmpfs' : '' }"
 
     input:
     tuple val(meta), path(refs), path(reads)
@@ -25,8 +25,10 @@ process IRMA {
     prefix = "${meta.id}"
 
     """
-    # determine IRMA path
+    # copy IRMA to workdir
     irma_path=\$(which IRMA)
+    cp -r \${irma_path%IRMA} ./
+    irma_path="\$(dirname \${irma_path#/})/IRMA"
 
     # create module
     mod=\$(shuf -er -n20  {A..Z} {a..z} {0..9} | tr -d '\n')
@@ -71,7 +73,7 @@ process IRMA {
     done
 
     # run IRMA
-    IRMA \${mod} --external-config irma.config ${reads[0]} ${reads[1]} results
+    \$irma_path \${mod} --external-config irma.config ${reads[0]} ${reads[1]} results
 
     # rename assemblies
     for F in \$(ls results/*.fasta)
