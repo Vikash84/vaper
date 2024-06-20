@@ -4,6 +4,7 @@ process IRMA {
     stageInMode 'copy'
     
     container "docker.io/staphb/irma:1.1.4"
+    containerOptions = "${ workflow.containerEngine == 'singularity' || workflow.containerEngine == 'apptainer' ? '--writable-tmpfs' : '' }"
 
     input:
     tuple val(meta), path(refs), path(reads)
