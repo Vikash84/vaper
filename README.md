@@ -8,17 +8,23 @@ VAPER is a viral assembly pipeline. Key features include:
 -  Provides a metagenomic summary of dominant viral taxa
 
 VAPER comes with comprehensive reference sets for the following viral species (created using [EPITOME](https://github.com/DOH-JDJ0303/epitome)):
-- Influenza A (segments 1-8)
-- Influenza B (segments 1-8)
-- Measles morbillivirus
-- Mumps orthorubulavirus
-- Lyssavirus rabies
-- Norovirus
-- Respiratory Syncytial Virus (RSV)
-- West Nile virus
-- Enterovirus D68
-- Hepacivirus (HCV)
-- Hepatovirus (HAV)
+**Taxon**|**Segments**|**Input Sequences**|**Data Source**
+-----|-----|-----|-----
+Influenza A|1-8|78703 (per segment)|GISAID
+Influenza B|1-8|17401 (per segment)|GISAID
+Measles morbillivirus|wg|890|NCBI
+Mumps orthorubulavirus|wg|1343|NCBI
+Lyssavirus rabies|wg|2607|NCBI
+Norovirus|wg|1662|NCBI
+Respiratory Syncytial Virus|wg|15273|GISAID
+West Nile virus|wg|1993|NCBI
+Enterovirus D68|wg|590|NCBI
+Hepacivirus|wg|1245|NCBI
+Hepatovirus|wg|131|NCBI
+Monkeypox virus|wg|2129|NCBI
+Severe acute respiratory syndrome coronavirus|wg|2000 (random)|NCBI
+
+
   
 See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
 
@@ -46,9 +52,9 @@ nextflow run DOH-JDJ0303/VAPER \
     --max_memory 16.GB
 ```
 ## Acknowledgements
-VAPER would not be possible without the following people:
-Holly Halstead (check out her tool [varcraft](https://github.com/DOH-HNH0303/varcraft)!)
-Pauline Trinh
-Allison Black
-Stephanie Lunn
-Kristen Waterman
+VAPER would not be possible without the following people:\
+Holly Halstead (WA PHL) (check out her tool [varcraft](https://github.com/DOH-HNH0303/varcraft)!)\
+Pauline Trinh (WA MEP)\
+Allison Black (WA MEP)\
+Stephanie Lunn (WA MEP)\
+Kristen Waterman (WA PHL)
