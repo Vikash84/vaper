@@ -32,6 +32,6 @@ process BAM_STATS {
     samtoolstats2tbl.sh ${prefix}.stats.txt > ${prefix}.samtoolstats2tbl.csv
 
     # get list of read headers for fastq extraction
-    samtools view ${bam} | cut -f 1 | sort | uniq > ${prefix}.read-list.txt
+    samtools view ${bam} | cut -f 1 | sed 's/_.*//g' | sort | uniq > ${prefix}.read-list.txt
     """
 }
