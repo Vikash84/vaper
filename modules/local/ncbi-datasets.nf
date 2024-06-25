@@ -1,6 +1,7 @@
 process NCBI_DATASETS {
     tag "${ref_id}"
     label 'process_low'
+    container 'public.ecr.aws/o8h2f0o1/ncbi-datasets:16.15.0'
 
     input:
     tuple val(ref_id), val(accession)

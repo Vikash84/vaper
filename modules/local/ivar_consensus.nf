@@ -3,7 +3,7 @@ process IVAR_CONSENSUS {
     label 'process_high'
 
     conda "bioconda::ivar"
-    container "staphb/ivar:1.4.2"
+    container "public.ecr.aws/o8h2f0o1/ivar:1.4.2"
 
     input:
     tuple val(meta), val(ref_id), path(bam)
