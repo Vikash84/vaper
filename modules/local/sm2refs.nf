@@ -1,8 +1,6 @@
 process SM2REFS {
     label 'process_low'
 
-    container 'docker.io/jdj0303/vaper-base:beta'
-
     input:
     tuple val(meta), path(sm_species)
 

@@ -3,7 +3,7 @@ process IRMA {
     label 'process_high'
     stageInMode 'copy'
     
-    container "docker.io/staphb/irma:1.1.4"
+    container "public.ecr.aws/o8h2f0o1/irma:1.1.4"
 
     input:
     tuple val(meta), path(refs), path(reads)
