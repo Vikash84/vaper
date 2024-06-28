@@ -93,7 +93,7 @@ workflow VALIDATE {
         .filter{ metric, type, results -> metric == "accuracy" }
         .map{ metric, type, results -> results }
         .splitText()
-        .filter(line -> line != "Sample,Truth,TP,FP,FN,Result\n")
+        .filter(line -> line != "Sample,Truth,Total,Compared,Correct,Incorrect,Accuracy\n")
         .collectFile(name: "accuracy_results.csv")
         .set{ ch_acc_res }
     
@@ -103,7 +103,7 @@ workflow VALIDATE {
         .filter{ metric, type, pairs -> metric == "accuracy" }
         .map{ metric, type, pairs -> pairs }
         .splitText()
-        .collectFile(name: "accuracy_pairs.csv")
+        .collectFile(name: "accuracy_pairs.tsv")
         .set{ ch_acc_pair }
     
     // Intra-assay Precision
@@ -113,7 +113,7 @@ workflow VALIDATE {
         .filter{ metric, type, results -> metric == "precision" && type == "inter" }
         .map{ metric, type, results -> results }
         .splitText()
-        .filter(line -> line != "Sample1,Sample2,TP,PP,Result\n")
+        .filter(line -> line != "Sample1,Sample2,Total,Agreements,Disagreements,Precision\n")
         .collectFile(name: "precision_inter_results.csv")
         .set{ ch_prec_inter_res }
         
@@ -124,7 +124,7 @@ workflow VALIDATE {
         .filter{ metric, type, pairs -> metric == "precision" && type == "inter" }
         .map{ metric, type, pairs -> pairs }
         .splitText()
-        .collectFile(name: "precision_inter_pairs.csv")
+        .collectFile(name: "precision_inter_pairs.tsv")
         .set{ ch_prec_inter_pair }
     
     // Intra-assay Precision
@@ -134,7 +134,7 @@ workflow VALIDATE {
         .filter{ metric, type, results -> metric == "precision" && type == "intra" }
         .map{ metric, type, results -> results }
         .splitText()
-        .filter(line -> line != "Sample1,Sample2,TP,PP,Result\n")
+        .filter(line -> line != "Sample1,Sample2,Total,Agreements,Disagreements,Precision\n")
         .collectFile(name: "precision_intra_results.csv")
         .set{ ch_prec_intra_res }
     
@@ -144,7 +144,7 @@ workflow VALIDATE {
         .filter{ metric, type, pairs -> metric == "precision" && type == "intra" }
         .map{ metric, type, pairs -> pairs }
         .splitText()
-        .collectFile(name: "precision_intra_pairs.csv")
+        .collectFile(name: "precision_intra_pairs.tsv")
         .set{ ch_prec_intra_pair }
 
     // Combine all

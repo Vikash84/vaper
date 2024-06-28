@@ -5,7 +5,7 @@ process REPORT {
     path results
 
     output:
-    path "validation-report.csv",  emit: report
+    path "*",  emit: report, includeInputs: true
 
     when:
     task.ext.when == null || task.ext.when
