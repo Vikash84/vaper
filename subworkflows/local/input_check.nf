@@ -89,6 +89,9 @@ def create_ref_channel(LinkedHashMap row) {
     if ( ref.getExtension() != 'gz' ) {
         exit 1, "ERROR: Reference assemblies must be gzip compressed. Please fix ${ref}"
     }
+    if ( ref.baseName.toString().chars().filter(it -> it == '.').count() > 2 ) {
+        exit 1, "ERROR: Reference assemblies cannot contain periods in their name. Please fix ${ref}"
+    }
 
     // add path of reference assembly to the meta map
     def refs = [ meta, row.segment, ref ]
