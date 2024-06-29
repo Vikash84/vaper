@@ -60,15 +60,24 @@ process IRMA {
     ## set elongation option
     echo -e 'SKIP_E=${ params.cons_elong ? '1' : '0' }' >> irma.config
          
-    # combine references into single file
-    zcat ${refs} > \${irma_path}_RES/modules/\${mod}/reference/consensus.fasta
-
-    # create HMM profiles for each reference
-    for f in ${refs} 
-    do 
+    # prepare references
+    for REF in \$(echo ${refs.join(',')} | tr ',' '\n')
+    do
+        ## concatenate multi-fasta references and change fasta header to match the fasta name
+        ## this mimics the concat step performed by iVar while also allowing for grouping of data in the main workflow
+        echo ">\${REF%%.*}" > \${REF%.gz}
+        zcat \${REF} | grep -v '>' | tr -d '\n\r\t ' >> \${REF%.gz}
+        
+        ## create HMM profiles for each reference
         ls \${irma_path%IRMA}LABEL_RES/scripts/modelfromalign_Linux
-        \${irma_path%IRMA}LABEL_RES/scripts/modelfromalign_Linux \${f%.fa.gz}_hmm -alignfile \${f}
-        mv \${f%.fa.gz}_hmm.mod \${irma_path}_RES/modules/\${mod}/profiles/
+        \${irma_path%IRMA}LABEL_RES/scripts/modelfromalign_Linux \${REF%%.*}_hmm -alignfile \${REF%.gz}
+        mv \${REF%%.*}_hmm.mod \${irma_path}_RES/modules/\${mod}/profiles/
+
+        # add the concatenated reference to a multi-fasta in the IRMA module
+        cat \${REF%.gz} >> \${irma_path}_RES/modules/\${mod}/reference/consensus.fasta
+
+        # remove the concatenated reference for easy reporting
+        rm \${REF%.gz}
     done
 
     # run IRMA
