@@ -16,12 +16,15 @@ include { NCBI_DATASETS                         } from '../../modules/local/ncbi
 
 workflow CLASSIFY {
     take:
-    ch_reads // channel: [ val(meta), path(reads) ]
+    ch_reads // channel: [ val(meta), path(reads), path/val(reference ) ]
     ch_refs  // channel: [ val(meta), path(reference) ]
 
     main:
 
     ch_versions = Channel.empty()
+    
+    ch_man_refs = ch_reads.map{ meta, reads, ref -> [ meta, ref] }
+    ch_reads    = ch_reads.map{ meta, reads, ref -> [ meta, reads ] }
 
     /* 
     =============================================================================================================================
@@ -188,7 +191,29 @@ workflow CLASSIFY {
             .set{ ch_ref_list }
 
     }
-        
+
+    /* 
+    =============================================================================================================================
+        REFERENCE SELECTION: Manual
+        - Adds list of references provided in the samplesheet
+    =============================================================================================================================
+    */
+    ch_man_refs
+        .filter{ meta, ref -> ref }
+        .map{ meta, ref -> [ meta, ref.tokenize(';') ] }
+        .transpose()
+        .map{ meta, ref -> [ meta, file(ref).exists() ? file(ref).getSimpleName() : ref, file(ref).exists() ? file(ref) : null ] }
+        .set{ ch_man_refs }
+    ch_man_refs
+        .filter{ meta, ref_id, ref -> ! ref }
+        .map{ meta, ref_id, ref -> [ ref_id, meta ] }
+        .combine(ch_refs.map{ meta, segment, ref -> [ file(ref).getSimpleName(), ref ] }, by: 0)
+        .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
+        .concat(ch_man_refs.filter{ meta, ref_id, ref -> ref })
+        .concat( ch_ref_list )
+        .unique()
+        .set{ ch_ref_list }
+
     emit:
     ref_list   = ch_ref_list   // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]
     sm_summary = ch_sm_summary // channel: [ val(meta), val(result) ]

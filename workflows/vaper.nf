@@ -87,7 +87,7 @@ workflow VAPER {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    INPUT_CHECK.out.reads.map{ meta, reads, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
+    INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
     INPUT_CHECK.out.refs.set{ ch_refs }
 
     /* 
@@ -131,7 +131,10 @@ workflow VAPER {
     // SUBWORKFLOW: Classify viruses
     //
     CLASSIFY (
-        FASTP.out.reads,
+        FASTP
+            .out
+            .reads
+            .join(INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reference ] }, by: 0),
         ch_refs
     )
 
@@ -201,7 +204,7 @@ workflow VAPER {
     */
 
     VALIDATE(
-        INPUT_CHECK.out.reads.map{ meta, reads, truth, inter_group, intra_group -> [ meta, truth, inter_group, intra_group ] },
+        INPUT_CHECK.out.reads.map{ meta, reads, ref, truth, inter_group, intra_group -> [ meta, truth, inter_group, intra_group ] },
         ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] }
     )
 
