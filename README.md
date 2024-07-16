@@ -2,7 +2,7 @@
 VAPER is a viral assembly pipeline. Key features include:
 -  Builds assemblies from probe enrichment (a.k.a hybrid capture/enrichment), shotgun metagenomic, and tiled-amplicon sequence data
 -  Automated reference selection (Detects what is in your sample)
--  Can an generate multiple assemblies per sample (Useful for co-infections)
+-  Can generate multiple assemblies per sample (Useful for co-infections)
 -  Can utilize iVar or IRMA assemblers (IRMA modules built on the fly!)
 -  Reads associated with each assembly are exported for downstream use
 -  Provides a metagenomic summary of dominant viral taxa
