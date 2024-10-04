@@ -6,7 +6,7 @@ process IRMA {
     container "public.ecr.aws/o8h2f0o1/irma:1.1.4"
 
     input:
-    tuple val(meta), path(refs), path(reads)
+    tuple val(meta), path(refs, stageAs: "refs/*"), path(reads)
     path module_template
 
     output:
@@ -61,12 +61,12 @@ process IRMA {
     echo -e 'SKIP_E=${ params.cons_elong ? '1' : '0' }' >> irma.config
          
     # prepare references
-    for REF in \$(echo ${refs.join(',')} | tr ',' '\n')
+    for REF in \$(ls refs/)
     do
         ## concatenate multi-fasta references and change fasta header to match the fasta name
         ## this mimics the concat step performed by iVar while also allowing for grouping of data in the main workflow
         echo ">\${REF%%.*}" > \${REF%.gz}
-        zcat \${REF} | grep -v '>' | tr -d '\n\r\t ' >> \${REF%.gz}
+        zcat refs/\${REF} | grep -v '>' | tr -d '\n\r\t ' >> \${REF%.gz} && echo >> \${REF%.gz}
         
         ## create HMM profiles for each reference
         ls \${irma_path%IRMA}LABEL_RES/scripts/modelfromalign_Linux
