@@ -4,11 +4,13 @@
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
 
 #----- HELP -----#
-[ -z $1 ] && echo "val_gather.sh [path/to/alignment/file] [accuracy|precision] [prefix]" && exit
+[ -z $1 ] && echo "val_gather.sh [path/to/alignment/file] [accuracy|precision] [prefix] [seq1_name] [seq2_name]" && exit
 
 #----- INPUTS -----#
 ALN=$1
 METRIC=$2
+S1=$3
+S2=$3
 
 # Check that the alignment exists and only has two sequences
 ! [ -f $ALN ] && echo "Error: Please supply a valid alignment file path." && exit 1
@@ -31,10 +33,6 @@ cat ${ALN} \
 
 # get only sites that were called in both sequences
 cat transposed.txt | awk '$1 != "N" && $2 != "N" {print}' > comp.txt
-
-# extract sequence names
-S1=$(cat $ALN | grep '>' | sed -n 1p | tr -d '>\n')
-S2=$(cat $ALN | grep '>' | sed -n 2p | tr -d '>\n')
 
 #----- CALCULATE ACCURACY -----#
 # First sequence (S1) in the alignment is treated as the "truth".

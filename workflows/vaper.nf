@@ -205,7 +205,8 @@ workflow VAPER {
 
     VALIDATE(
         INPUT_CHECK.out.reads.map{ meta, reads, ref, truth, inter_group, intra_group -> [ meta, truth, inter_group, intra_group ] },
-        ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] }
+        ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] },
+        COMBINE_SUMMARYLINES.out.summary
     )
 
     CUSTOM_DUMPSOFTWAREVERSIONS (

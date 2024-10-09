@@ -1,5 +1,6 @@
 process GATHER {
     label 'process_low'
+    tag "${fasta.baseName}-${metric}-${precision_type}"
 
     conda "bioconda::mafft=7.520"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -21,7 +22,7 @@ process GATHER {
     def args = task.ext.args   ?: ''
     """
     mafft --auto ${fasta} > ${fasta.baseName}.aln
-    val_gather.sh ${fasta.baseName}.aln "${metric}"
+    val_gather.sh ${fasta.baseName}.aln "${metric}" "${fasta.baseName.tokenize(".")[1]}" "${fasta.baseName.tokenize(".")[0]}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

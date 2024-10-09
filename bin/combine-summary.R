@@ -111,4 +111,4 @@ df <- df %>%
          -READS_MAPPED,
          -BASES_MAPPED)
 # save combined summary
-write.csv(x=df, file="combined-summary.csv", row.names = F)
+write.csv(x=df, file="combined-summary.csv", row.names = F, quote = F)

@@ -11,10 +11,25 @@ workflow VALIDATE {
     take:
     ch_samplesheet // channel: [ val(meta), path(truth), val(inter_group), val(intra_group) ]
     ch_consensus   // channel: [ val(meta), path(consensus) ]
+    ch_summary     // channel: [ path(summary) ]
 
     main:
 
     ch_versions = Channel.empty()
+
+    /* 
+    =============================================================================================================================
+        FILTER SAMPLES PASSING QC
+    =============================================================================================================================
+    */
+
+    ch_summary
+        .splitCsv(header: true)
+        .filter{ it.ASSEMBLY_QC == "PASS" }
+        .map{ [[id: it.ID, single_end: false], it.ID+"_"+it.REFERENCE+".fa"] }
+        .join(ch_consensus.map{meta, con -> [ meta, con.name, con ]}, by: [0,1])
+        .map{ meta, name, consensus -> [ meta, consensus ] }
+        .set{ ch_consensus }  
 
     /* 
     =============================================================================================================================
