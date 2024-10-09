@@ -10,7 +10,7 @@
 ALN=$1
 METRIC=$2
 S1=$3
-S2=$3
+S2=$4
 
 # Check that the alignment exists and only has two sequences
 ! [ -f $ALN ] && echo "Error: Please supply a valid alignment file path." && exit 1
