@@ -8,21 +8,21 @@ VAPER is a viral assembly pipeline. Key features include:
 -  Provides a metagenomic summary of dominant viral taxa
 
 VAPER comes with comprehensive reference sets for the following viral species (created using [EPITOME](https://github.com/DOH-JDJ0303/epitome)):
-**Taxon**|**Segments**|**Input Sequences**|**Data Source**
------|-----|-----|-----
-Influenza A|1-8|78703 (per segment)|GISAID
-Influenza B|1-8|17401 (per segment)|GISAID
-Measles morbillivirus|wg|890|NCBI
-Mumps orthorubulavirus|wg|1343|NCBI
-Lyssavirus rabies|wg|2607|NCBI
-Norovirus|wg|1662|NCBI
-Respiratory Syncytial Virus|wg|15273|GISAID
-West Nile virus|wg|1993|NCBI
-Enterovirus D68|wg|590|NCBI
-Hepacivirus|wg|1245|NCBI
-Hepatovirus|wg|131|NCBI
-Monkeypox virus|wg|2129|NCBI
-Severe acute respiratory syndrome coronavirus|wg|2000 (random)|NCBI
+**Taxon**|**Segments**|**Input Sequences**|**No. References**|**Data Source**
+-----|-----|-----|-----|-----|
+Influenza A|1-8|78703 (per segment)|8-93|GISAID
+Influenza B|1-8|17401 (per segment)|1-2|GISAID
+Measles morbillivirus|wg|890|1|NCBI
+Mumps orthorubulavirus|wg|1343|1|NCBI
+Lyssavirus rabies|wg|2607|42|NCBI
+Norovirus|wg|1662|87|NCBI
+Respiratory Syncytial Virus|wg|15273|2|GISAID
+West Nile virus|wg|1993|8|NCBI
+Enterovirus D68|wg|590|4|NCBI
+Hepacivirus|wg|1245|120|NCBI
+Hepatovirus|wg|131|20|NCBI
+Monkeypox virus|wg|2129|1|NCBI
+Severe acute respiratory syndrome coronavirus|wg|2000 (random)|1|NCBI
 
 
   
