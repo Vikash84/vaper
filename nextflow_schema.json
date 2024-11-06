@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -25,13 +28,20 @@
                 "refs": {
                     "type": "string",
                     "default": "${baseDir}/assets/reference_sets/1718026015-epitome_95.tar.gz",
-                    "fa_icon": "fas fa-file-csv"
+                    "fa_icon": "fas fa-file-csv",
+                    "description": "Path to reference set."
                 },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
+                },
+                "max_reads": {
+                    "type": "integer",
+                    "default": 2000000,
+                    "description": "Maximum number of reads per sample (R1+R2).",
+                    "fa_icon": "fas fa-glasses"
                 },
                 "email": {
                     "type": "string",
@@ -131,7 +141,7 @@
             "properties": {
                 "cons_assembler": {
                     "type": "string",
-                    "default": "irma",
+                    "default": "ivar",
                     "description": "Consensus assembler ('irma' or 'ivar').",
                     "fa_icon": "fas fa-puzzle-piece"
                 },
@@ -156,14 +166,14 @@
                 "cons_depth": {
                     "type": "integer",
                     "default": 30,
-                    "description": "Character used for ambiguous bases ('N', 'DEL', 'REF'). 'DEL' and 'REF' options only apply to IRMA.",
+                    "description": "Minimum allele depth for consensus assembly generation.",
                     "fa_icon": "fas fa-chart-pie"
                 },
                 "cons_amb": {
                     "type": "string",
                     "default": "N",
-                    "description": "Minimum allele depth for consensus assembly generation.",
-                    "fa_icon": "fas fa-chart-pie"
+                    "fa_icon": "fas fa-chart-pie",
+                    "description": "Character used for ambiguous bases ('N', 'DEL', 'REF'). 'DEL' and 'REF' options only apply to IRMA."
                 },
                 "cons_elong": {
                     "type": "boolean",
@@ -342,7 +352,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -431,34 +448,34 @@
     },
     "allOf": [
         {
-            "$ref": "#/definitions/input_output_options"
+            "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/definitions/classification_options_general"
+            "$ref": "#/$defs/classification_options_general"
         },
         {
-            "$ref": "#/definitions/classification_options_reference_selection"
+            "$ref": "#/$defs/classification_options_reference_selection"
         },
         {
-            "$ref": "#/definitions/classification_options_de_novo_assembly"
+            "$ref": "#/$defs/classification_options_de_novo_assembly"
         },
         {
-            "$ref": "#/definitions/assembly_options_consensus_assembly"
+            "$ref": "#/$defs/assembly_options_consensus_assembly"
         },
         {
-            "$ref": "#/definitions/assembly_options_quality_control"
+            "$ref": "#/$defs/assembly_options_quality_control"
         },
         {
-            "$ref": "#/definitions/reference_genome_options"
+            "$ref": "#/$defs/reference_genome_options"
         },
         {
-            "$ref": "#/definitions/institutional_config_options"
+            "$ref": "#/$defs/institutional_config_options"
         },
         {
-            "$ref": "#/definitions/max_job_request_options"
+            "$ref": "#/$defs/max_job_request_options"
         },
         {
-            "$ref": "#/definitions/generic_options"
+            "$ref": "#/$defs/generic_options"
         }
     ]
 }

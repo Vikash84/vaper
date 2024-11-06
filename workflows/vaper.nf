@@ -58,6 +58,7 @@ include { VALIDATE    } from '../subworkflows/local/validate'
 // MODULE: Installed directly from nf-core/modules
 //
 include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+include { SEQTK_SAMPLE                } from '../modules/nf-core/seqtk/sample/main'
 include { FASTP                       } from '../modules/nf-core/fastp/main'
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
@@ -94,7 +95,41 @@ workflow VAPER {
     =============================================================================================================================
         QUALITY CONTROL: READS
     =============================================================================================================================
-    */ 
+    */
+
+    //
+    // MODULE: Downsample reads with Seqtk Subseq
+    //
+    if(params.max_reads){
+        // determine samples with too many reads
+        ch_reads
+            .map{ meta, reads -> [ meta: meta, reads: reads, n: reads[0].countFastq()*2 ] }
+            .branch{ it -> 
+                ok: it.n <= params.max_reads
+                high: it.n > params.max_reads  }
+            .set{ ch_reads }
+        // create foward and reverse read channels
+        ch_reads
+            .high
+            .map{it -> [ it.meta, it.reads[0], params.max_reads ] }
+            .set{ch_fwd}
+        ch_reads
+            .high
+            .map{ it -> [ it.meta, it.reads[1], params.max_reads ] }
+            .set{ch_rev}
+
+        SEQTK_SAMPLE(
+            ch_fwd.concat(ch_rev)
+        )
+        ch_versions = ch_versions.mix(SEQTK_SAMPLE.out.versions.first())
+        // combine forward and reverse read channels
+        SEQTK_SAMPLE
+            .out
+            .reads
+            .groupTuple(by: 0)
+            .concat(ch_reads.ok.map{ [ it.meta, it.reads ] })
+            .set{ ch_reads }
+    }
 
     //
     // MODULE: Run FastQC
