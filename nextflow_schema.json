@@ -448,34 +448,34 @@
     },
     "allOf": [
         {
-            "$ref": "#/$defs/input_output_options"
+            "$ref": "#/definitions/input_output_options"
         },
         {
-            "$ref": "#/$defs/classification_options_general"
+            "$ref": "#/definitions/classification_options_general"
         },
         {
-            "$ref": "#/$defs/classification_options_reference_selection"
+            "$ref": "#/definitions/classification_options_reference_selection"
         },
         {
-            "$ref": "#/$defs/classification_options_de_novo_assembly"
+            "$ref": "#/definitions/classification_options_de_novo_assembly"
         },
         {
-            "$ref": "#/$defs/assembly_options_consensus_assembly"
+            "$ref": "#/definitions/assembly_options_consensus_assembly"
         },
         {
-            "$ref": "#/$defs/assembly_options_quality_control"
+            "$ref": "#/definitions/assembly_options_quality_control"
         },
         {
-            "$ref": "#/$defs/reference_genome_options"
+            "$ref": "#/definitions/reference_genome_options"
         },
         {
-            "$ref": "#/$defs/institutional_config_options"
+            "$ref": "#/definitions/institutional_config_options"
         },
         {
-            "$ref": "#/$defs/max_job_request_options"
+            "$ref": "#/definitions/max_job_request_options"
         },
         {
-            "$ref": "#/$defs/generic_options"
+            "$ref": "#/definitions/generic_options"
         }
     ]
 }
