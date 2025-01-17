@@ -17,35 +17,39 @@ workflow INPUT_CHECK {
         .csv
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channel(it) }
-        .set { reads }
+        .set { ch_reads }
 
     // Create reference assembly channel
-    if (params.refs.endsWith('.tar.gz')){
+    if (refs.toString().endsWith('.tar.gz')){
         // MODULE: Extract reference set from a tar.gz compressed file.
         TAR2REFS (
-            file(params.refs)
+            refs
         )
-
+        TAR2REFS
+            .out
+            .refs
+            .flatten()
+            .map{ create_ref_channel([ it.getName(), it ]) }
+            .set{ ch_refs }
         TAR2REFS
             .out
             .refsheet
-            .splitCsv(header: true)
-            .map{ tuple(file(it.assembly).getName(), it.taxa, it.segment)  }
-            .join(TAR2REFS.out.refs.flatten().map{ assembly -> [ file(assembly).getName(), assembly ] }, by: 0)
-            .map{ name, taxa, segment, assembly -> [ taxa: taxa, segment: segment, assembly: assembly ] }
-            .map{ it -> create_ref_channel(it) }
-            .set{ refs }
+            .set{ ch_refsheet }
     }else {
         Channel
-        .fromPath(refs)
-        .splitCsv( header: true, sep:',' )
-        .map{ it -> create_ref_channel(it) }
-        .set{ refs }
+            .fromPath(refs)
+            .splitCsv( header: true )
+            .map{ it -> create_ref_channel( [ file(it.assembly).getName(), it.assembly ] ) }
+            .set{ ch_refs }
+        Channel
+            .fromPath(refs)
+            .set{ ch_refsheet }
     }
 
     emit:
-    reads                                     // channel: [ val(meta), [ reads ] ]
-    refs                                      // channel: [ val(meta), path(refs) ]
+    reads    = ch_reads                       // channel: [ val(meta), [ reads ] ]
+    refs     = ch_refs                        // channel: [ val(meta), path(refs), path(refsheet) ]
+    refsheet = ch_refsheet                    // channel: [ path(refsheet) ] 
     versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
@@ -81,14 +85,16 @@ def create_fastq_channel(LinkedHashMap row) {
 }
 
 // Function to get list of [ meta, assembly ]
-def create_ref_channel(LinkedHashMap row) {
-    // create meta map
-    def meta = [:]
-    meta.id = row.taxa
+def create_ref_channel(row) {
+    // extract elements
+    def name     = row[0]
+    def ref      = file(row[1], checkIfExists: true)
+    // create meta map - mimics the samplesheet
+    def meta        = [:]
+    meta.id         = file(name).getSimpleName()
     meta.single_end = true
 
     // check reference assemblies
-    def ref = file(row.assembly, checkIfExists: true)
     if ( ref.getExtension() != 'gz' ) {
         exit 1, "ERROR: Reference assemblies must be gzip compressed. Please fix ${ref}"
     }
@@ -97,7 +103,7 @@ def create_ref_channel(LinkedHashMap row) {
     }
 
     // add path of reference assembly to the meta map
-    def refs = [ meta, row.segment, ref ]
+    def refs = [ meta, ref ]
 
     return refs
 }

@@ -66,7 +66,7 @@ workflow CLASSIFY {
     */
     if (params.ref_mode == "accurate"){
         ch_refs
-            .map{ meta, segment, assembly -> assembly }
+            .map{ meta, assembly -> assembly }
             .collect()
             .map{ assembly -> [ assembly ] }
             .set{ ch_ref_assemblies }
@@ -108,7 +108,7 @@ workflow CLASSIFY {
 
         // MODULE: Reference sketches
         SM_SKETCH_REF (
-            ch_refs.map{meta, segment, assembly -> assembly }.collect()
+            ch_refs.map{meta, assembly -> assembly }.collect()
         )
 
         // MODULE: Run Sourmash gather against the reference pool using the forward reads
@@ -149,9 +149,9 @@ workflow CLASSIFY {
         .ref_list
         .splitCsv(header: false, elem: 1)
         .transpose()
-        .map{ meta, ref -> [ meta, file(ref).getSimpleName() ] }
-        .combine(ch_refs.map{ meta, segment, ref -> [ meta.id, file(ref).getSimpleName(), ref ] }, by: 1)
-        .map{ index, meta, ref_id, ref -> [ meta, index, ref ] }
+        .map{ meta, ref -> [ file(ref).getSimpleName(), meta ] }
+        .combine(ch_refs.map{ ref_meta, assembly -> [ ref_meta.id, assembly ] }, by: 0)
+        .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
         .set{ ch_ref_list }
 
     // Create Sourmash summary channel
@@ -186,7 +186,7 @@ workflow CLASSIFY {
         ch_sm_refs
             .map{ meta, ref_id, accession -> [ ref_id, meta ] }
             .combine(NCBI_DATASETS.out.assembly, by: 0)
-            .map{ ref_id, meta, assembly -> [ meta, ref_id, assembly ] }
+            .map{ ref_id, meta, assembly -> [ meta, assembly ] }
             .concat(ch_ref_list)
             .set{ ch_ref_list }
 
@@ -207,7 +207,7 @@ workflow CLASSIFY {
     ch_man_refs
         .filter{ meta, ref_id, ref -> ! ref }
         .map{ meta, ref_id, ref -> [ ref_id, meta ] }
-        .combine(ch_refs.map{ meta, segment, ref -> [ file(ref).getSimpleName(), ref ] }, by: 0)
+        .combine(ch_refs.map{ meta, assembly -> [ meta.id, assembly ] }, by: 0)
         .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
         .concat(ch_man_refs.filter{ meta, ref_id, ref -> ref })
         .concat( ch_ref_list )

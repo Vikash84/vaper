@@ -90,6 +90,8 @@ workflow VAPER {
 
     INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
     INPUT_CHECK.out.refs.set{ ch_refs }
+    INPUT_CHECK.out.refsheet.set{ ch_refsheet }
+
 
     /* 
     =============================================================================================================================
@@ -218,7 +220,7 @@ workflow VAPER {
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
        all_list
-           .combine(ch_refs.map{ meta, segment, assembly -> meta.id+","+segment+","+assembly }.collectFile(name: "refsheet.csv", newLine: true))
+           .combine( ch_refsheet )
     )
 
     // MODULE: Combine summarylines
@@ -228,6 +230,7 @@ workflow VAPER {
         .map{ meta, summaryline -> [ summaryline ] }
         .collect()
         .set{ all_summaries }
+    
     COMBINE_SUMMARYLINES (
         all_summaries
     )

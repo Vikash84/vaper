@@ -31,11 +31,10 @@ if(args[1] == "version"){
 #----- CREATE EMPTY DATAFRAME -----#
 # set expected columns & create empty dataframe
 col.list <- c("ID",
-         "TAXA",
-         "SEGMENT",
          "REFERENCE",
+         "SPECIES",
+         "SEGMENT",
          "ASSEMBLY_VARIANT",
-         "ASSEMBLY_NC",
          "ASSEMBLY_QC",
          "ASSEMBLY_QC_REASON",
          "ASSEMBLY_LENGTH",
@@ -99,16 +98,14 @@ df <- df %>%
          ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '; $', replacement = ''))
 # summarize assembly variants
 df <- df %>%
-  group_by(ID, TAXA, SEGMENT) %>%
+  group_by(ID,SPECIES,SEGMENT) %>%
   mutate(ASSEMBLY_VARIANT = paste0(row_number()," of ", n())) %>%
   ungroup()
 
 # order columns
+allCols <- colnames(df)
 df <- df %>%
-  drop_na(ID) %>%
-  select(col.list) %>%
-  select(-ASSEMBLY_NC,
-         -READS_MAPPED,
-         -BASES_MAPPED)
+  select(all_of(c(col.list, allCols[!(allCols %in% col.list)]))) %>%
+  drop_na(ID)
 # save combined summary
 write.csv(x=df, file="combined-summary.csv", row.names = F, quote = F)
