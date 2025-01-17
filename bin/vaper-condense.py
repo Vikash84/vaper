@@ -177,7 +177,7 @@ minhashes = {}
 ids = []
 for record in screed.open(args.fasta):
     name = re.sub(args.prefix + '_', '', record.name)
-    mh = sourmash.MinHash(n=0, ksize=args.ksize, scaled=1000)
+    mh = sourmash.MinHash(n=0, ksize=args.ksize, scaled=10)
     mh.add_sequence(record.sequence, True)
     minhashes[ name ] = { 'assembly': record.name, 'mh': mh, 'covXdepth': float(read_stats[ name ]['cov'])/100 * float(read_stats[ name ]['depth']) }
 ids = list(set(ids))
