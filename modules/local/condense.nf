@@ -35,7 +35,7 @@ process CONDENSE {
     mv dists.csv ${prefix}.condense_dist.csv
     # remove condensed sequences
     rm seqs.fa
-    for s in \$(cat ${prefix}.condensed.csv | tr -d '"' | tail -n +2 | awk -v FS=',' '\$2 != "" {print \$1}' | uniq)
+    for s in \$(cat ${prefix}.condense_summary.csv | tr -d '"' | tail -n +2 | awk -v FS=',' '\$2 != "" {print \$1}' | uniq)
     do
         rm \${s}.fa
     done
