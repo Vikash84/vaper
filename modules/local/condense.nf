@@ -18,7 +18,7 @@ process CONDENSE {
     script:
     prefix = "${meta.id}"
     """
-    if [[ "${assemblies.size()}" > 0 ]]
+    if [[ \$(zcat ${assemblies} | grep '>' | wc -l ) > 1 ]]
     then
         # combine read stats into single file
         cat ${read_stats} | grep '#rname' | sort | uniq > read_stats.tsv # head -n 1 fails
