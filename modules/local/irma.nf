@@ -10,7 +10,7 @@ process IRMA {
     path module_template
 
     output:
-    tuple val(meta), path('*.fa'),     emit: consensus
+    tuple val(meta), path('*.fa.gz'),             emit: consensus
     tuple val(meta), path('results/*.bam'),    emit: bam
     tuple val(meta), path('results/logs/'),    emit: logs
     tuple val(meta), path('results/figures/'), emit: figures
@@ -93,7 +93,7 @@ process IRMA {
 
         # return fasta 
         assembly="\${assembly_path}\${REF_ID}\${assembly_ext}"
-        cat \${assembly} > \${PREFIX}.fa
+        cat \${assembly} | gzip > \${PREFIX}.fa.gz
     done
 
     # clean up
