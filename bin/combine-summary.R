@@ -73,7 +73,12 @@ colnames(df.empty) <- col.list
 # get list of summary lines
 files <- list.files("./", pattern = ".csv", full.names = T)
 # combine all lines
-df <- do.call(bind_rows, lapply(files, FUN=read.csv)) %>%
+mergeTables <- function(file){
+  read_csv(file) %>%
+    mutate_all(as.character) %>%
+    return()
+}
+df <- do.call(bind_rows, lapply(files, FUN=mergeTables)) %>%
   bind_rows(df.empty)
 
 
