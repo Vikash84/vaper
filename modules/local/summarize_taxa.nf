@@ -7,10 +7,12 @@ process SUMMARIZE_TAXA {
     path refs_comp
 
     output:
-    tuple val(meta), path("*.ref-summary.csv"),  emit: ref_summary, optional: true
-    tuple val(meta), path("*.ref-list.csv"),     emit: ref_list
-    tuple val(meta), env(sm_summary),            emit: sm_summary
-    tuple val(meta), path("*.jpg"),              emit: plots, optional: true
+    tuple val(meta), path("*.ref-summary.csv"),          emit: ref_summary, optional: true
+    tuple val(meta), path("*.ref-list.csv"),             emit: ref_list
+    tuple val(meta), path("*.taxa-summary.csv"), emit: sm_summary
+    tuple val(meta), path("*.jpg"),                      emit: plots, optional: true
+    path "versions.yml",                                 emit: versions
+
 
 
     when:
@@ -37,6 +39,10 @@ process SUMMARIZE_TAXA {
     #---- TAXA SUMMARY ----#
     # summarize taxa at >= 1X coverage and >= 1% relative abundance
     sm_summary.R ${sm_meta} ${prefix}
-    sm_summary=\$(cat ${prefix}.taxa-summary.csv)
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        sm_summary.R: \$(combine-summary.R version)
+    END_VERSIONS
     """
 }

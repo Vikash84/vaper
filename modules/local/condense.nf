@@ -45,7 +45,7 @@ process CONDENSE {
 
     # version info
     cat <<-END_VERSIONS > versions.yml
-    "!{task.process}":
+    "${task.process}":
         vaper-condense: \$(vaper-condense.py --version)
     END_VERSIONS
     """

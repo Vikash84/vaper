@@ -6,13 +6,19 @@ process COMBINE_SUMMARYLINES {
 
     output:
     path "combined-summary.csv", emit: summary
+    path "versions.yml",         emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
-    script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
+    script:
     """
     # combine summaries
     combine-summary.R "${params.qc_depth}" "${params.qc_genfrac}"
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        combine-summary.R: \$(combine-summary.R version)
+    END_VERSIONS
     """
 }

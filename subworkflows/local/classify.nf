@@ -36,6 +36,7 @@ workflow CLASSIFY {
     SM_SKETCH_SAMPLE (
         ch_reads.map{ meta, reads -> [ meta, reads.get(0) ] } // only uses forward read
     )
+    ch_versions = ch_versions.mix(SM_SKETCH_SAMPLE.out.versions)
 
     /* 
     =============================================================================================================================
@@ -52,12 +53,14 @@ workflow CLASSIFY {
         false,
         false
     )
+    ch_versions = ch_versions.mix(SM_GATHER_SAMPLE.out.versions)
 
     // MODULE: Summarize taxa from sourmash gather
     SM_META_SAMPLE (
         SM_GATHER_SAMPLE.out.result,
         file(params.sm_taxa, checkIfExists: true)
     )
+    ch_versions = ch_versions.mix(SM_META_SAMPLE.out.versions)
 
     /* 
     =============================================================================================================================
@@ -83,15 +86,17 @@ workflow CLASSIFY {
         SHOVILL (
             ch_reads
         )
+        ch_versions = ch_versions.mix(SHOVILL.out.versions)
 
         // MODULE: Map contigs to the references
         MINIMAP2_ALIGN (
             SHOVILL.out.contigs,
-            FORMAT_REFS.out.refs.map{ refs -> [ "reference", refs ] }.first(),
+            FORMAT_REFS.out.refs.map{ refs -> [ "reference", refs ] },
             false,
             false,
             false
         )
+        ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
 
         // Set reference list & reference composition summary
         MINIMAP2_ALIGN.out.paf.set{ ch_ref_list }
@@ -110,6 +115,7 @@ workflow CLASSIFY {
         SM_SKETCH_REF (
             ch_refs.map{meta, assembly -> assembly }.collect()
         )
+        ch_versions = ch_versions.mix(SM_SKETCH_REF.out.versions)
 
         // MODULE: Run Sourmash gather against the reference pool using the forward reads
         SM_GATHER_SELECT (
@@ -120,6 +126,7 @@ workflow CLASSIFY {
             false,
             false
         )
+        ch_versions = ch_versions.mix(SM_GATHER_SELECT.out.versions)
 
         // Set reference list & empty reference composition summary
         SM_GATHER_SELECT.out.result.set{ ch_ref_list }
@@ -140,8 +147,9 @@ workflow CLASSIFY {
 
     SUMMARIZE_TAXA(
         ch_taxa_sample,
-        ch_refs_comp.first()
+        ch_refs_comp
     )
+    ch_versions = ch_versions.mix(SUMMARIZE_TAXA.out.versions)
 
     // Update reference list
     SUMMARIZE_TAXA
@@ -182,6 +190,7 @@ workflow CLASSIFY {
         NCBI_DATASETS (
             ch_sm_refs.map{ meta, ref_id, accession -> [ ref_id, accession ] }.unique()
         )
+        ch_versions = ch_versions.mix(NCBI_DATASETS.out.versions)
 
         ch_sm_refs
             .map{ meta, ref_id, accession -> [ ref_id, meta ] }
@@ -217,5 +226,5 @@ workflow CLASSIFY {
     emit:
     ref_list   = ch_ref_list   // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]
     sm_summary = ch_sm_summary // channel: [ val(meta), val(result) ]
-    //versions = SHOVILL.out.versions // channel: [ versions.yml ]
+    versions   = ch_versions   // channel: [ versions.yml ]
 }

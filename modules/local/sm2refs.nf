@@ -11,7 +11,7 @@ process SM2REFS {
     task.ext.when == null || task.ext.when
 
     version = "1.0"
-    script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
+    script:
     prefix = "${meta.id}"
     """
     if [[ -s ${sm_species} ]]

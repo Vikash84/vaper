@@ -35,7 +35,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // MODULE: Local modules
 //
-include { FASTP2TBL            } from '../modules/local/fastp2tbl'
 include { SUMMARYLINE          } from '../modules/local/create-summaryline'
 include { COMBINE_SUMMARYLINES } from '../modules/local/combine-summary'
 
@@ -123,7 +122,7 @@ workflow VAPER {
         SEQTK_SAMPLE(
             ch_fwd.concat(ch_rev)
         )
-        ch_versions = ch_versions.mix(SEQTK_SAMPLE.out.versions.first())
+        ch_versions = ch_versions.mix(SEQTK_SAMPLE.out.versions)
         // combine forward and reverse read channels
         SEQTK_SAMPLE
             .out
@@ -139,7 +138,7 @@ workflow VAPER {
     FASTQC (
         ch_reads
     )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    ch_versions = ch_versions.mix(FASTQC.out.versions)
 
     //
     // MODULE: Run Fastp
@@ -150,13 +149,7 @@ workflow VAPER {
         false,
         false
     )
-
-    //
-    // MODULE: Convert Fastp summary to table format
-    //
-    FASTP2TBL (
-        FASTP.out.json
-    )
+    ch_versions = ch_versions.mix(FASTP.out.versions)
 
     /* 
     =============================================================================================================================
@@ -174,6 +167,7 @@ workflow VAPER {
             .join(INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reference ] }, by: 0),
         ch_refs
     )
+    ch_versions = ch_versions.mix(CLASSIFY.out.versions)
 
     /* 
     =============================================================================================================================
@@ -184,6 +178,7 @@ workflow VAPER {
     ASSEMBLE (
         CLASSIFY.out.ref_list.combine(FASTP.out.reads, by: 0)
     )
+    ch_versions = ch_versions.mix(ASSEMBLE.out.versions)
 
     /* 
     =============================================================================================================================
@@ -194,34 +189,30 @@ workflow VAPER {
     // Combine outputs of samples that had references
     ASSEMBLE
         .out
-        .samtoolstats2tbl
+        .bam_stats
         .join(ASSEMBLE.out.nextclade, by: [0,1])
         .set{ ch_assembly_list }
     // Create channel of samples with no reference
-    if(! CLASSIFY.out.ref_list){
-        println "Oh no! All your samples failed! :("
-    }
+    if(! CLASSIFY.out.ref_list ){ println "Oh no! All your samples failed! :(" }
     ch_reads
         .map{ meta, reads -> [ meta ] }
-        .join(CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }.ifEmpty([null,null]), by: 0, remainder: true)
+        .join( CLASSIFY.out.ref_list.map{ meta, ref_id, ref -> [ meta, ref_id ] }.ifEmpty( [ null, null] ), by: 0, remainder: true )
         .filter{ meta, ref_id -> ref_id == null}
         .map{ meta, ref_id -> [ meta, "No_Reference", [], [] ] }
         .set{ ch_no_assembly_list }
 
     // Combine the reference and non-reference channels & add Fastp & Sourmash results
-    FASTP2TBL.out.tbl.set{ fastp2tbl }
-    CLASSIFY.out.sm_summary.set{ sm_summary }
     ch_assembly_list
       .concat(ch_no_assembly_list)
-      .combine(fastp2tbl, by: 0)
-      .combine(sm_summary, by: 0)
+      .combine(FASTP.out.json, by: 0)
+      .combine(CLASSIFY.out.sm_summary, by: 0)
       .set{ all_list }
 
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list
-           .combine( ch_refsheet )
+       all_list.combine( ch_refsheet )
     )
+    ch_versions = ch_versions.mix(SUMMARYLINE.out.versions)
 
     // MODULE: Combine summarylines
     SUMMARYLINE
@@ -234,6 +225,7 @@ workflow VAPER {
     COMBINE_SUMMARYLINES (
         all_summaries
     )
+    ch_versions = ch_versions.mix(COMBINE_SUMMARYLINES.out.versions)
 
     /* 
     =============================================================================================================================
@@ -246,6 +238,7 @@ workflow VAPER {
         ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] },
         COMBINE_SUMMARYLINES.out.summary
     )
+    // ch_versions = ch_versions.mix(VALIDATE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
