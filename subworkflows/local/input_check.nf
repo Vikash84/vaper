@@ -3,7 +3,9 @@
 //
 
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
-include { TAR2REFS          } from '../../modules/local/tar2refs'
+include { REFS2TAR          } from '../../modules/local/refs2tar'
+include { FORMAT_REFS       } from '../../modules/local/format_refs'
+
 
 
 workflow INPUT_CHECK {
@@ -12,6 +14,11 @@ workflow INPUT_CHECK {
     refs        // file: /path/to/ref-list.csv or ref-list.tar.gz
 
     main:
+    /* 
+    =============================================================================================================================
+        SAMPLESHEET
+    =============================================================================================================================
+    */
     // Create samplesheet channel
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
@@ -19,37 +26,36 @@ workflow INPUT_CHECK {
         .map { create_fastq_channel(it) }
         .set { ch_reads }
 
-    // Create reference assembly channel
-    if (refs.toString().endsWith('.tar.gz')){
-        // MODULE: Extract reference set from a tar.gz compressed file.
-        TAR2REFS (
-            refs
+    /* 
+    =============================================================================================================================
+        REFERENCES
+    =============================================================================================================================
+    */
+    // Get all references into compressed format
+    if (! refs.toString().endsWith('.tar.gz')){
+        // MODULE: Compress references into tar.gz file
+        REFS2TAR (
+            Channel
+                .fromPath(refs)
+                .map{ [ it, it ] }
+                .splitCsv( header: true, elem: 1 )
+                .map{ refsheet, data -> [ refsheet, it.assembly ] }
         )
-        TAR2REFS
-            .out
-            .refs
-            .flatten()
-            .map{ create_ref_channel([ it.getName(), it ]) }
-            .set{ ch_refs }
-        TAR2REFS
-            .out
-            .refsheet
-            .set{ ch_refsheet }
-    }else {
+        REFS2TAR.out.tar.set{ ch_refs_tar }
+        
+    }else{
         Channel
             .fromPath(refs)
-            .splitCsv( header: true )
-            .map{ it -> create_ref_channel( [ file(it.assembly).getName(), it.assembly ] ) }
-            .set{ ch_refs }
-        Channel
-            .fromPath(refs)
-            .set{ ch_refsheet }
+            .set{ ch_refs_tar }
     }
+    // Further format references
+    FORMAT_REFS (
+        ch_refs_tar
+    )
 
     emit:
     reads    = ch_reads                       // channel: [ val(meta), [ reads ] ]
-    refs     = ch_refs                        // channel: [ val(meta), path(refs), path(refsheet) ]
-    refsheet = ch_refsheet                    // channel: [ path(refsheet) ] 
+    refs     = FORMAT_REFS.out.refs           // channel: [ path(refs.fa.gz), path(refs-comp.txt.gz), path(refs.tar.gz), path(refsheet.csv.gz) ]
     versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
@@ -61,7 +67,7 @@ def create_fastq_channel(LinkedHashMap row) {
     meta.single_end = row.single_end.toBoolean()
 
     // define manual references
-    ref = row.reference ? row.reference : null
+    ref = row.reference ? row.reference : []
 
     // define validation fields
     truth = row.truth ? file(row.truth, checkIfExists: true) : null
@@ -82,28 +88,4 @@ def create_fastq_channel(LinkedHashMap row) {
         fastq_meta = [ meta, [ file(row.fastq_1), file(row.fastq_2) ], ref, truth, inter_group, intra_group ]
     }    
     return fastq_meta
-}
-
-// Function to get list of [ meta, assembly ]
-def create_ref_channel(row) {
-    // extract elements
-    def name     = row[0]
-    def ref      = file(row[1], checkIfExists: true)
-    // create meta map - mimics the samplesheet
-    def meta        = [:]
-    meta.id         = file(name).getSimpleName()
-    meta.single_end = true
-
-    // check reference assemblies
-    if ( ref.getExtension() != 'gz' ) {
-        exit 1, "ERROR: Reference assemblies must be gzip compressed. Please fix ${ref}"
-    }
-    if ( ref.baseName.toString().chars().filter(it -> it == '.').count() > 2 ) {
-        exit 1, "ERROR: Reference assemblies cannot contain periods in their name. Please fix ${ref}"
-    }
-
-    // add path of reference assembly to the meta map
-    def refs = [ meta, ref ]
-
-    return refs
 }

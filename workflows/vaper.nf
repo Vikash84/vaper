@@ -88,9 +88,8 @@ workflow VAPER {
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
+    INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reference ] }.set{ ch_refs_man }
     INPUT_CHECK.out.refs.set{ ch_refs }
-    INPUT_CHECK.out.refsheet.set{ ch_refsheet }
-
 
     /* 
     =============================================================================================================================
@@ -161,11 +160,9 @@ workflow VAPER {
     // SUBWORKFLOW: Classify viruses
     //
     CLASSIFY (
-        FASTP
-            .out
-            .reads
-            .join(INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reference ] }, by: 0),
-        ch_refs
+        FASTP.out.reads,
+        ch_refs,
+        ch_refs_man
     )
     ch_versions = ch_versions.mix(CLASSIFY.out.versions)
 
@@ -210,7 +207,7 @@ workflow VAPER {
 
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list.combine( ch_refsheet )
+       all_list.combine( ch_refs.map{ all, comp, tar, sheet -> sheet } )
     )
     ch_versions = ch_versions.mix(SUMMARYLINE.out.versions)
 

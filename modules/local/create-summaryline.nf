@@ -21,9 +21,12 @@ process SUMMARYLINE {
     fastp2tbl.sh ${fastp_json} > ${prefix}.fastp2tbl.csv
     ## Mapping stats
     samtoolstats2tbl.sh ${bam_stats} > ${prefix}.samtoolstats2tbl.csv
+    
+    # extract refsheet
+    zcat ${refsheet} > refsheet.csv
 
     # create summaryline
-    summaryline.R ${prefix}.fastp2tbl.csv "${sm_summary}" ${prefix}.samtoolstats2tbl.csv "${nextclade}" "${prefix}" "${ref_id}" "${refsheet}"
+    summaryline.R ${prefix}.fastp2tbl.csv "${sm_summary}" ${prefix}.samtoolstats2tbl.csv "${nextclade}" "${prefix}" "${ref_id}" refsheet.csv
     # rename using prefix and reference
     mv summaryline.csv "${prefix}-${ref_id}.summaryline.csv"
     

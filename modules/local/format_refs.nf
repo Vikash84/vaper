@@ -7,11 +7,10 @@ process FORMAT_REFS {
         'staphb/seqtk:1.3' }"
 
     input:
-    tuple path(ref_list), path(assemblies)
+    path refs_tar
 
     output:
-    path "refs.fa.gz",       emit: refs
-    path "refs-comp.txt", emit: refs_comp
+    tuple path("refs.fa.gz"), path("refs-comp.txt.gz"), path("*.tar.gz", includeInputs: true), path("refsheet.csv.gz"), emit: refs
     path "versions.yml",  emit: versions
 
     when:
@@ -20,17 +19,23 @@ process FORMAT_REFS {
     version = "1.0"
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
-    # rename fasta headers and combine into multi-fasta file
-    for ref in \$(cat ${ref_list})
+    # Extract references
+    tar xvzf ${refs_tar}
+
+    # Copy refsheet
+    cp */*.csv refsheet.csv && gzip refsheet.csv
+
+    # Combine sequences into single file with renamed fasta headers
+    for ref in \$(ls */references/)
     do
-        seqtk seq -C \${ref} > tmp.fa
+        seqtk seq -C */references/\${ref} > tmp.fa
         seqtk rename tmp.fa \${ref##*/} >> refs.fa
     done
     rm tmp.fa
     gzip refs.fa
 
-    # get contig lengths
-    seqtk comp refs.fa.gz > refs-comp.txt
+    # Get contig lengths
+    seqtk comp refs.fa.gz | gzip > refs-comp.txt.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -1,14 +1,13 @@
 process TAR2REFS {
-    tag "${refs}"
+    tag "${refs_tar}"
     label 'process_low'
     stageInMode 'copy'
 
     input:
-    path refs
+    tuple val(ref_ids), path(refs_tar)
 
     output:
-    path "*/*.csv",  emit: refsheet
-    path "*/references/*", emit: refs
+    path "select/*", emit: refs
 
 
     when:
@@ -16,6 +15,17 @@ process TAR2REFS {
 
     script: // This script is bundled with the pipeline, in nf-core/waphlviral/bin/
     """
-    tar -xvzf ${refs}
+    # Save selected references to file
+    echo -e "${ref_ids.join('\n')}" > select.csv
+
+    # Extract references
+    tar -xvzf ${refs_tar}
+
+    # Move over reference files
+    mkdir select
+    for REF in \$(cat select.csv)
+    do
+        cp */references/\${REF} select/
+    done    
     """
 }

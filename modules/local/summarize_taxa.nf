@@ -30,10 +30,10 @@ process SUMMARIZE_TAXA {
     #---- REFERENCE SELECTION: ACCURATE ----#
     elif [ "${params.ref_mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
-        ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
-    
+        zcat ${refs_comp} > refs-comp.txt
+        ref-select_accurate.R ${ref_info} refs-comp.txt "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
     else
-        echo 'none_selected' > ${prefix}.ref-list.csv        
+        echo 'none_selected' > ${prefix}.ref-list.csv
     fi
 
     #---- TAXA SUMMARY ----#

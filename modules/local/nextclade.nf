@@ -1,4 +1,6 @@
 process NEXTCLADE {
+    tag "${prefix}"
+    
     input:
     tuple val(ref_id), val(meta), path(consensus), path(ref)
 
@@ -18,9 +20,9 @@ process NEXTCLADE {
 
     # add extra metrics
     echo -e "ASSEMBLY_LENGTH\tREF_LENGTH\tASSEMBLY_TERMINAL_GAPS" > extra_metrics.tsv
-    cat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c > ASSEMBLY_LENGTH
-    cat ${ref} | grep -v ">" | tr -d '\t\n\r ' | wc -c > ASSEMBLY_LENGTH
-    cat ${prefix}.aligned.fasta | grep -oE '^[-]+|[-]+\$' | tr -d '\n\r\t ' | wc -c > TERMINAL_GAPS || true
+    zcat ${consensus} | grep -v ">" | tr -d '\t\n\r ' | wc -c > ASSEMBLY_LENGTH
+    zcat ${ref} | grep -v ">" | tr -d '\t\n\r ' | wc -c > ASSEMBLY_LENGTH
+    zcat ${prefix}.aligned.fasta | grep -oE '^[-]+|[-]+\$' | tr -d '\n\r\t ' | wc -c > TERMINAL_GAPS || true
     paste ASSEMBLY_LENGTH ASSEMBLY_LENGTH TERMINAL_GAPS >> extra_metrics.tsv
     paste nextclade.tsv extra_metrics.tsv > ${prefix}.metrics.tsv
 
