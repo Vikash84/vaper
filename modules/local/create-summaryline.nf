@@ -3,7 +3,7 @@ process SUMMARYLINE {
     label 'process_low'
 
     input:
-    tuple val(meta), val(ref_id), path(bam_stats), path(nextclade), path(fastp_json), val(sm_summary), path(refsheet)
+    tuple val(meta), val(ref_id), path(bam_stats), path(nextclade), path(fastp_json), path(sm_summary), path(refsheet)
 
     output:
     tuple val(meta), path("*.summaryline.csv"), emit: summaryline
