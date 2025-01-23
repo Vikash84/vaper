@@ -20,7 +20,10 @@ process SUMMARYLINE {
     ## Fastp
     fastp2tbl.sh ${fastp_json} > ${prefix}.fastp2tbl.csv
     ## Mapping stats
-    samtoolstats2tbl.sh ${bam_stats} > ${prefix}.samtoolstats2tbl.csv
+    if [ -f "${bam_stats}" ]
+    then
+        samtoolstats2tbl.sh ${bam_stats} > ${prefix}.samtoolstats2tbl.csv
+    fi
     
     # extract refsheet
     zcat ${refsheet} > refsheet.csv
