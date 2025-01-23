@@ -148,8 +148,7 @@ workflow CLASSIFY {
         .set{ ch_taxa_sample }
 
     SUMMARIZE_TAXA(
-        ch_taxa_sample,
-        ch_refs_comp
+        ch_taxa_sample.combine(ch_refs_comp)
     )
     ch_versions = ch_versions.mix(SUMMARIZE_TAXA.out.versions)
 

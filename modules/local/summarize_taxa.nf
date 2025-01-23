@@ -3,9 +3,8 @@ process SUMMARIZE_TAXA {
     label 'process_low'
 
     input:
-    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz"), path(sm_meta)
-    path refs_comp
-
+    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz"), path(sm_meta), path(refs_comp)
+    
     output:
     tuple val(meta), path("*.ref-summary.csv"),          emit: ref_summary, optional: true
     tuple val(meta), path("*.ref-list.csv"),             emit: ref_list
