@@ -67,28 +67,22 @@ workflow CLASSIFY {
     )
     ch_versions = ch_versions.mix(SM_META_SAMPLE.out.versions)
 
-    // /* 
-    // =============================================================================================================================
-    //     REFERENCE SELECTION: Manual
-    //     - Adds list of references provided in the samplesheet
-    // =============================================================================================================================
-    // */
-    // ch_refs_man
-    //     .filter{ meta, ref -> ref }
-    //     .map{ meta, ref -> [ meta, ref.tokenize(';') ] }
-    //     .transpose()
-    //     .map{ meta, ref -> [ meta, file(ref).exists() ? file(ref).getSimpleName() : ref, file(ref).exists() ? file(ref) : null ] }
-    //     .set{ ch_man_refs }
-    // ch_refs_man
-    //     .filter{ meta, ref_id, ref -> ! ref }
-    //     .map{ meta, ref_id, ref -> [ ref_id, meta ] }
-    //     .combine(ch_refs.map{ meta, assembly -> [ meta.id, assembly ] }, by: 0)
-    //     .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
-    //     .concat(ch_man_refs.filter{ meta, ref_id, ref -> ref })
-    //     .concat( ch_ref_list )
-    //     .unique()
-    //     .set{ ch_ref_list }
-
+    /* 
+    =============================================================================================================================
+        REFERENCE SELECTION: Manual
+        - Adds list of references provided in the samplesheet
+    =============================================================================================================================
+    */
+    ch_refs_man
+        .filter{ meta, ref -> ref }
+        .map{ meta, ref -> [ meta, ref.tokenize(';') ] }
+        .transpose()
+        .map{ meta, ref -> [ meta, file(ref).exists() ? file(ref).getSimpleName() : "${ref}.fa.gz", file(ref).exists() ? file(ref) : null ] }
+        .branch{ meta, ref_id, ref ->
+            internal: ! ref
+            external: ref
+        }
+        .set{ ch_man_refs }
     /* 
     =============================================================================================================================
         REFERENCE SELECTION: ACCURATE
@@ -104,7 +98,7 @@ workflow CLASSIFY {
         // MODULE: Map contigs to the references
         MINIMAP2_ALIGN (
             SHOVILL.out.contigs,
-            ch_refs_fmt.map{ refs -> [ 'null', refs ] },
+            ch_refs_fmt.map{ refs -> [ 'null', refs ] }.first(),
             false,
             false,
             false
@@ -166,6 +160,7 @@ workflow CLASSIFY {
         .ref_list
         .splitCsv(header: false, elem: 1)
         .transpose()
+        .concat(ch_man_refs.internal.map{ meta, ref_id, ref -> [ meta, ref_id ] })
         .set{ ch_ref_list }
 
     // Save Sourmash summary channel
@@ -196,6 +191,7 @@ workflow CLASSIFY {
         .map{ meta, ref -> [ file(ref).getSimpleName(), meta ] }
         .combine(ch_refs, by: 0)
         .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
+        .concat(ch_man_refs.external)
         .set{ ch_ref_list }
 
     /* 

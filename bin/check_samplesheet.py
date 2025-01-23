@@ -34,6 +34,7 @@ class RowChecker:
         first_col="fastq_1",
         second_col="fastq_2",
         single_col="single_end",
+        ref_col='reference',
         truth_col="truth",
         intra_group_col="intra_group",
         intra_rep_col="intra_rep",
@@ -58,7 +59,7 @@ class RowChecker:
         """
         super().__init__(**kwargs)
         self._sample_col = sample_col
-        self._first_col = first_col
+        self._first_col =  first_col
         self._second_col = second_col
         self._single_col = single_col
         self._seen = set()
