@@ -28,6 +28,38 @@ if(args[1] == "version"){
   quit(status=0)
 }
 
+#----- FUNCTIONS -----#
+qcCheck <- function(gf, gf_threshold, depth, depth_threshold){
+  if(is.na(gf) || is.na(depth)){
+    # No assembly
+    status <- NA_character_
+    reason <- NA_character_
+  }else{
+    # Default status
+    status <- 'PASS'
+    reason <- NA_character_
+    # Genome fraction
+    if(as.numeric(gf) < as.numeric(gf_threshold)){
+      status <- 'FAIL'
+      reason_gf <- paste0('Genome fraction below ',gf_threshold)
+      reason <- reason_gf
+    }
+    # Depth of coverage
+    if(as.numeric(depth) < as.numeric(depth_threshold)){
+      status <- 'FAIL'
+      reason_depth <- paste0('Depth of coverage below ',depth_threshold,"X")
+      if(!is.na(reason)){
+        reason <- paste(reason_depth, collapse = '; ')
+      }else{
+        reason <- reason_depth
+      }
+  }
+
+  }
+  
+  return(list(status, reason))
+}
+
 #----- CREATE EMPTY DATAFRAME -----#
 # set expected columns & create empty dataframe
 col.list <- c("ID",
@@ -90,17 +122,11 @@ df <- df %>%
          PERC_BASES_MAPPED = round(100*as.numeric(BASES_MAPPED) / as.numeric(TOTAL_BASES_CLEAN),digits = 1))
 # QC status
 df <- df %>%
-  mutate(ASSEMBLY_QC_REASON = '',
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_EST_DEPTH < as.numeric(min_depth) ~ 'Low depth of coverage',
-                                        TRUE ~ ASSEMBLY_QC_REASON),
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_GEN_FRAC < as.numeric(min_genfrac) ~ paste(ASSEMBLY_QC_REASON, 'Low genome fraction', sep = "; "),
-                                        TRUE ~ ASSEMBLY_QC_REASON),       
-         ASSEMBLY_QC = case_when(ASSEMBLY_QC_REASON == '' ~ 'PASS',
-                                 TRUE ~ 'FAIL'),
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_NC == 'mediocre' | ASSEMBLY_NC == 'bad' ~ paste(ASSEMBLY_QC_REASON, "WARNING: Nextclade QC rating was '",ASSEMBLY_NC,"'", sep = '; '),
-                                        TRUE ~ ASSEMBLY_QC_REASON),
-         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '^; ', replacement = ''),
-         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '; $', replacement = ''))
+  group_by(ID,REFERENCE) %>%
+  mutate (ASSEMBLY_QC = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[1]),
+          ASSEMBLY_QC_REASON = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[2])) %>%
+  ungroup() %>%
+  select(-any_of(c('ASSEMBLY_NC')))
 # summarize assembly variants
 df <- df %>%
   group_by(ID,SPECIES,SEGMENT) %>%
