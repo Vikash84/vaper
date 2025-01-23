@@ -3,7 +3,7 @@
 //
 include { FORMAT_REFS                           } from '../../modules/local/format_refs'
 include { SHOVILL                               } from '../../modules/nf-core/shovill/main'
-include { MINIMAP2_ALIGN                        } from '../../modules/nf-core/minimap2/align/main'
+include { MINIMAP2_ALIGN                        } from '../../modules/local/minimap2_align'
 include { SM_SKETCH_REF                         } from '../../modules/local/sourmash_sketch_ref'
 include { SOURMASH_SKETCH as SM_SKETCH_SAMPLE   } from '../../modules/nf-core/sourmash/sketch/main'
 include { SOURMASH_GATHER as SM_GATHER_SELECT   } from '../../modules/nf-core/sourmash/gather/main'
@@ -97,11 +97,10 @@ workflow CLASSIFY {
 
         // MODULE: Map contigs to the references
         MINIMAP2_ALIGN (
-            SHOVILL.out.contigs,
-            ch_refs_fmt.map{ refs -> [ 'null', refs ] }.first(),
-            false,
-            false,
-            false
+            SHOVILL
+                .out
+                .contigs
+                .combine( ch_refs_fmt )
         )
         ch_versions = ch_versions.mix(MINIMAP2_ALIGN.out.versions)
 
