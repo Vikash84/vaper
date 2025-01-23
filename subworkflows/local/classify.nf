@@ -172,6 +172,7 @@ workflow CLASSIFY {
         ch_ref_list
             .map{ meta, ref_id -> ref_id}
             .unique()
+            .filter{ it != 'none_selected' }
             .collect()
             .map{ [ it ] }
             .combine(ch_refs_tar)
