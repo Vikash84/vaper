@@ -19,7 +19,7 @@ VAPER comes with comprehensive reference sets for the following viral taxa (crea
 |Betainfluenzavirus  |1 - 8     |             94|1           |               96657|
 |Bocaparvovirus      |wg        |            104|48          |                 608|
 |Enterovirus         |wg        |           1967|26          |                6740|
-|Hantavirus          |[l; m; s] |            244|32          |                 825|
+|Hantavirus          |l, m, s   |            244|32          |                 825|
 |Hepacivirus         |wg        |            888|42          |                1060|
 |Hepatovirus         |wg        |             60|14          |                 114|
 |Lyssavirus          |wg        |            198|23          |                2126|
