@@ -29,7 +29,7 @@ process CONDENSE {
         vaper-condense.py \\
             --fasta seqs.fa.gz \\
             --stats read_stats.tsv \\
-            --dist_threshold ${params.cons_cond_dist} \\
+            --dist_threshold ${params.cons_condist} \\
             --prefix "${prefix}"
         
         # rename output

@@ -10,7 +10,10 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": [
+                "input",
+                "outdir"
+            ],
             "properties": {
                 "input": {
                     "type": "string",
@@ -176,6 +179,12 @@
                     "type": "boolean",
                     "description": "Option to use elongation feature with IRMA. This is ignored for iVar.",
                     "fa_icon": "fas fa-chart-pie"
+                },
+                "cons_condist": {
+                    "type": "number",
+                    "default": 0.02,
+                    "fa_icon": "fas fa-chart-pie",
+                    "description": "Average nucleotide difference used to condense duplicate assemblies 1-(%ANI/100). Set this to 0 if you want to skip the condense step."
                 }
             },
             "fa_icon": "fas fa-puzzle-piece"
@@ -196,24 +205,6 @@
                     "type": "number",
                     "default": 0.9,
                     "description": "Minimum genome fraction used for the final quality assessment. This differs from the minimum genome fraction used for reference selection (i.e., --ref_genfrac). In general, this value should be higher than the reference selection threshold.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "nc_miss": {
-                    "type": "number",
-                    "default": 0.1,
-                    "description": "Proportion of the sample consensus genome that can be missing. This is used by Nextclade to assign quality scores.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "nc_miss_bias": {
-                    "type": "integer",
-                    "default": 0,
-                    "description": "Number of missing bases that are ignored by Nextclade.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "nc_mixed": {
-                    "type": "number",
-                    "default": 0.0003,
-                    "description": "Proportion of the sample consensus genome that can be a mixed base call. This is used by Nextclade to assign quality scores.",
                     "fa_icon": "fas fa-chart-pie"
                 }
             },
@@ -349,7 +340,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -467,11 +465,5 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ],
-    "properties": {
-        "cons_cond_dist": {
-            "type": "number",
-            "default": 0.02
-        }
-    }
+    ]
 }
