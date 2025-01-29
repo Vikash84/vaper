@@ -143,8 +143,8 @@ workflow CLASSIFY {
     */
     // combine reference mapping, sample taxonomy, and reference taxonomy
     ch_ref_list
-        .join(SM_GATHER_SAMPLE.out.result)
-        .join(SM_META_SAMPLE.out.result)
+        .join(SM_META_SAMPLE.out.result, remainder: true)
+        .map{ meta, ref_list, sm_meta -> [ meta, ref_list, sm_meta ? sm_meta : [] ] }
         .set{ ch_taxa_sample }
 
     SUMMARIZE_TAXA(

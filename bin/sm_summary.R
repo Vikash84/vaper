@@ -28,7 +28,11 @@ if(args[1] == "version"){
 }
 
 # load sourmash data
-df <- read_csv(sm_taxa)
+if(file.exists(sm_taxa)){
+  df <- read_csv(sm_taxa)
+}else{
+  df <- data.frame()
+}
 # create plot & summary
 if(nrow(df) > 0){
     # get fraction of sample that was unclassified

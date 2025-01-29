@@ -3,7 +3,7 @@ process SUMMARIZE_TAXA {
     label 'process_low'
 
     input:
-    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz"), path(sm_meta), path(refs_comp)
+    tuple val(meta), path(ref_info), path(sm_meta), path(refs_comp)
     
     output:
     tuple val(meta), path("*.ref-summary.csv"),          emit: ref_summary, optional: true
@@ -37,7 +37,7 @@ process SUMMARIZE_TAXA {
 
     #---- TAXA SUMMARY ----#
     # summarize taxa at >= 1X coverage and >= 1% relative abundance
-    sm_summary.R ${sm_meta} ${prefix}
+    sm_summary.R "${sm_meta}" ${prefix}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
