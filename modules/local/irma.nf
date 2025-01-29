@@ -10,11 +10,11 @@ process IRMA {
     path module_template
 
     output:
-    tuple val(meta), path('*.fa'),     emit: consensus
+    tuple val(meta), path('*.fa.gz'),          emit: consensus
     tuple val(meta), path('results/*.bam'),    emit: bam
     tuple val(meta), path('results/logs/'),    emit: logs
     tuple val(meta), path('results/figures/'), emit: figures
-    //path "versions.yml",                     emit: versions
+    path "versions.yml",                       emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -93,10 +93,15 @@ process IRMA {
 
         # return fasta 
         assembly="\${assembly_path}\${REF_ID}\${assembly_ext}"
-        cat \${assembly} > \${PREFIX}.fa
+        cat \${assembly} | gzip > \${PREFIX}.fa.gz
     done
 
     # clean up
     #rm -r \${irma_path}_RES/modules/\${mod}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        IRMA: \$(IRMA | grep "(IRMA)" | cut -f 2 -d ',' | cut -f 2 -d ' ')
+    END_VERSIONS
     """
 }

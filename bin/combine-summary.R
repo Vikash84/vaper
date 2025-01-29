@@ -28,14 +28,45 @@ if(args[1] == "version"){
   quit(status=0)
 }
 
+#----- FUNCTIONS -----#
+qcCheck <- function(gf, gf_threshold, depth, depth_threshold){
+  if(is.na(gf) || is.na(depth)){
+    # No assembly
+    status <- NA_character_
+    reason <- NA_character_
+  }else{
+    # Default status
+    status <- 'PASS'
+    reason <- NA_character_
+    # Genome fraction
+    if(as.numeric(gf) < as.numeric(gf_threshold)){
+      status <- 'FAIL'
+      reason_gf <- paste0('Genome fraction below ',gf_threshold)
+      reason <- reason_gf
+    }
+    # Depth of coverage
+    if(as.numeric(depth) < as.numeric(depth_threshold)){
+      status <- 'FAIL'
+      reason_depth <- paste0('Depth of coverage below ',depth_threshold,"X")
+      if(!is.na(reason)){
+        reason <- paste(reason_depth, collapse = '; ')
+      }else{
+        reason <- reason_depth
+      }
+  }
+
+  }
+  
+  return(list(status, reason))
+}
+
 #----- CREATE EMPTY DATAFRAME -----#
 # set expected columns & create empty dataframe
 col.list <- c("ID",
-         "TAXA",
-         "SEGMENT",
          "REFERENCE",
+         "SPECIES",
+         "SEGMENT",
          "ASSEMBLY_VARIANT",
-         "ASSEMBLY_NC",
          "ASSEMBLY_QC",
          "ASSEMBLY_QC_REASON",
          "ASSEMBLY_LENGTH",
@@ -74,7 +105,12 @@ colnames(df.empty) <- col.list
 # get list of summary lines
 files <- list.files("./", pattern = ".csv", full.names = T)
 # combine all lines
-df <- do.call(bind_rows, lapply(files, FUN=read.csv)) %>%
+mergeTables <- function(file){
+  read_csv(file) %>%
+    mutate_all(as.character) %>%
+    return()
+}
+df <- do.call(bind_rows, lapply(files, FUN=mergeTables)) %>%
   bind_rows(df.empty)
 
 
@@ -86,29 +122,21 @@ df <- df %>%
          PERC_BASES_MAPPED = round(100*as.numeric(BASES_MAPPED) / as.numeric(TOTAL_BASES_CLEAN),digits = 1))
 # QC status
 df <- df %>%
-  mutate(ASSEMBLY_QC_REASON = '',
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_EST_DEPTH < as.numeric(min_depth) ~ 'Low depth of coverage',
-                                        TRUE ~ ASSEMBLY_QC_REASON),
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_GEN_FRAC < as.numeric(min_genfrac) ~ paste(ASSEMBLY_QC_REASON, 'Low genome fraction', sep = "; "),
-                                        TRUE ~ ASSEMBLY_QC_REASON),       
-         ASSEMBLY_QC = case_when(ASSEMBLY_QC_REASON == '' ~ 'PASS',
-                                 TRUE ~ 'FAIL'),
-         ASSEMBLY_QC_REASON = case_when(ASSEMBLY_NC == 'mediocre' | ASSEMBLY_NC == 'bad' ~ paste(ASSEMBLY_QC_REASON, "WARNING: Nextclade QC rating was '",ASSEMBLY_NC,"'", sep = '; '),
-                                        TRUE ~ ASSEMBLY_QC_REASON),
-         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '^; ', replacement = ''),
-         ASSEMBLY_QC_REASON = gsub(ASSEMBLY_QC_REASON, pattern = '; $', replacement = ''))
+  group_by(ID,REFERENCE) %>%
+  mutate (ASSEMBLY_QC = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[1]),
+          ASSEMBLY_QC_REASON = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[2])) %>%
+  ungroup() %>%
+  select(-any_of(c('ASSEMBLY_NC')))
 # summarize assembly variants
 df <- df %>%
-  group_by(ID, TAXA, SEGMENT) %>%
+  group_by(ID,SPECIES,SEGMENT) %>%
   mutate(ASSEMBLY_VARIANT = paste0(row_number()," of ", n())) %>%
   ungroup()
 
 # order columns
+allCols <- colnames(df)
 df <- df %>%
-  drop_na(ID) %>%
-  select(col.list) %>%
-  select(-ASSEMBLY_NC,
-         -READS_MAPPED,
-         -BASES_MAPPED)
+  select(all_of(c(col.list, allCols[!(allCols %in% col.list)]))) %>%
+  drop_na(ID)
 # save combined summary
 write.csv(x=df, file="combined-summary.csv", row.names = F, quote = F)

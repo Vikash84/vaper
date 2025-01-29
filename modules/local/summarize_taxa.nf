@@ -3,14 +3,15 @@ process SUMMARIZE_TAXA {
     label 'process_low'
 
     input:
-    tuple val(meta), path(ref_info), path(sm_gather, stageAs: "sm_gather.csv.gz"), path(sm_meta)
-    path refs_comp
-
+    tuple val(meta), path(ref_info), path(sm_meta), path(refs_comp)
+    
     output:
-    tuple val(meta), path("*.ref-summary.csv"),  emit: ref_summary, optional: true
-    tuple val(meta), path("*.ref-list.csv"),     emit: ref_list
-    tuple val(meta), env(sm_summary),            emit: sm_summary
-    tuple val(meta), path("*.jpg"),              emit: plots, optional: true
+    tuple val(meta), path("*.ref-summary.csv"),          emit: ref_summary, optional: true
+    tuple val(meta), path("*.ref-list.csv"),             emit: ref_list
+    tuple val(meta), path("*.taxa-summary.csv"), emit: sm_summary
+    tuple val(meta), path("*.jpg"),                      emit: plots, optional: true
+    path "versions.yml",                                 emit: versions
+
 
 
     when:
@@ -28,15 +29,19 @@ process SUMMARIZE_TAXA {
     #---- REFERENCE SELECTION: ACCURATE ----#
     elif [ "${params.ref_mode}" == "accurate" ] && [ -s ${ref_info} ]
     then
-        ref-select_accurate.R ${ref_info} ${refs_comp} "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
-    
+        zcat ${refs_comp} > refs-comp.txt
+        ref-select_accurate.R ${ref_info} refs-comp.txt "${prefix}" "${params.ref_genfrac}" "${params.ref_covplot ? 'TRUE' : 'FALSE' }"
     else
-        echo 'none_selected' > ${prefix}.ref-list.csv        
+        echo 'none_selected' > ${prefix}.ref-list.csv
     fi
 
     #---- TAXA SUMMARY ----#
     # summarize taxa at >= 1X coverage and >= 1% relative abundance
-    sm_summary.R ${sm_meta} ${prefix}
-    sm_summary=\$(cat ${prefix}.taxa-summary.csv)
+    sm_summary.R "${sm_meta}" ${prefix}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        sm_summary.R: \$(combine-summary.R version)
+    END_VERSIONS
     """
 }

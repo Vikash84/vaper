@@ -9,8 +9,8 @@ process IVAR_CONSENSUS {
     tuple val(meta), val(ref_id), path(bam)
 
     output:
-    tuple val(meta), val(ref_id), path('*.fa'),  emit: consensus
-    path "versions.yml",                         emit: versions
+    tuple val(meta), val(ref_id), path('*.fa.gz'), emit: consensus
+    path "versions.yml",                           emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -34,6 +34,7 @@ process IVAR_CONSENSUS {
        ${args}
     
     sed -i 's/>.*/>${prefix}/g' ${prefix}.fa
+    gzip ${prefix}.fa
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

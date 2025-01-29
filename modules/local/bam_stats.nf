@@ -11,10 +11,10 @@ process BAM_STATS {
     tuple val(meta), val(ref_id), path(bam)
 
     output:
-    tuple val(meta), val(ref_id), path('*.coverage.txt'),         emit: coverage
-    tuple val(meta), val(ref_id), path('*.samtoolstats2tbl.csv'), emit: stats
-    tuple val(meta), val(ref_id), path("*.read-list.txt"),        emit: read_list
-    //path "versions.yml",                                          emit: versions
+    tuple val(meta), val(ref_id), path("${prefix}.coverage.txt"),  emit: coverage
+    tuple val(meta), val(ref_id), path("${prefix}.stats.txt"),     emit: stats
+    tuple val(meta), val(ref_id), path("${prefix}.read-list.txt"), emit: read_list
+    path "versions.yml",                                           emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -29,9 +29,13 @@ process BAM_STATS {
     # gather read stats
     samtools coverage ${bam} > ${prefix}.coverage.txt
     samtools stats --threads ${task.cpus} ${bam} > ${prefix}.stats.txt
-    samtoolstats2tbl.sh ${prefix}.stats.txt > ${prefix}.samtoolstats2tbl.csv
 
     # get list of read headers for fastq extraction
     samtools view ${bam} | cut -f 1 | sed 's/_.*//g' | sort | uniq > ${prefix}.read-list.txt
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        samtools: \$(echo \$(samtools version 2>&1) | cut -f 2 -d ' ')
+    END_VERSIONS
     """
 }

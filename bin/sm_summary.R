@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+version <- 1
+
 # sm_summary.R
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
 
@@ -7,17 +9,30 @@
 list.of.packages <- c("readr", "dplyr","tidyr","ggplot2")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
+
 # load packages
 library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+
 # load args
 args <- commandArgs(trailingOnly=T)
 sm_taxa <- args[1]
 prefix <- args[2]
+
+#---- VERSION ----#
+if(args[1] == "version"){
+  cat(version, sep = "\n")
+  quit(status=0)
+}
+
 # load sourmash data
-df <- read_csv(sm_taxa)
+if(file.exists(sm_taxa)){
+  df <- read_csv(sm_taxa)
+}else{
+  df <- data.frame()
+}
 # create plot & summary
 if(nrow(df) > 0){
     # get fraction of sample that was unclassified

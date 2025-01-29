@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- "1.0"
+version <- "1.1"
 
 # summaryline.R
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
@@ -30,12 +30,15 @@ if(args[1] == "version"){
   cat(version, sep = "\n")
   quit(status=0)
 }
-
-df.refs <- read_csv(args[7]) %>%
-  rename(TAXA = 1,
-         SEGMENT = 2,
-         REFERENCE = 3) %>%
-  mutate(REFERENCE = sub('\\..*$', '', basename(REFERENCE)))
+#----- Load Reference Info -----#
+df.refs <- read_csv(refsheet) %>%
+  rename_all(toupper) %>%
+  group_by(ASSEMBLY) %>%
+  mutate(REFERENCE = unlist(strsplit(basename(ASSEMBLY), '\\.'))[1]) %>%
+  ungroup() %>%
+  select(-ASSEMBLY) %>%
+  drop_na(REFERENCE) %>%
+  unique()
 
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref) %>%
@@ -76,8 +79,7 @@ if(file.exists(nextclade)){
 
 #---- Sourmash Species Summary ----#
 df.summaryline <- df.summaryline %>%
-  mutate(SPECIES_SUMMARY = case_when( sm_summary == "" ~ "All viruses below 1X genome fraction",
-                                      TRUE ~ gsub(sm_summary, pattern = ";$", replacement = "")))
+  mutate(SPECIES_SUMMARY = read_csv(sm_summary, col_names = F)$X1)
 
 #----- Create Summaryline -----#
 # make ID always show up first

@@ -1,34 +1,42 @@
 # VAPER: Viral Assembly from Probe-based EnRichment
-VAPER is a viral assembly pipeline. Key features include:
+## Overview
+VAPER is a pipeline for virus genome assembly.
+### Key Features:
 -  Builds assemblies from probe enrichment (a.k.a hybrid capture/enrichment), shotgun metagenomic, and tiled-amplicon sequence data
 -  Automated reference selection (Detects what is in your sample)
 -  Can generate multiple assemblies per sample (Useful for co-infections)
--  Can utilize iVar or IRMA assemblers (IRMA modules built on the fly!)
+-  Predicts the taxonomy of each assembly (Also includes a *metagenomic* summary!)
 -  Reads associated with each assembly are exported for downstream use
--  Provides a metagenomic summary of dominant viral taxa
+-  Can utilize iVar or IRMA assemblers (IRMA modules built on the fly!)
 
-VAPER comes with comprehensive reference sets for the following viral species (created using [EPITOME](https://github.com/DOH-JDJ0303/epitome)):
-**Taxon**|**Segments**|**Input Sequences**|**No. References**|**Data Source**
------|-----|-----|-----|-----|
-Influenza A|1-8|78703 (per segment)|8-93|GISAID
-Influenza B|1-8|17401 (per segment)|1-2|GISAID
-Measles morbillivirus|wg|890|1|NCBI
-Mumps orthorubulavirus|wg|1343|1|NCBI
-Lyssavirus rabies|wg|2607|42|NCBI
-Norovirus|wg|1662|87|NCBI
-Respiratory Syncytial Virus|wg|15273|2|GISAID
-West Nile virus|wg|1993|8|NCBI
-Enterovirus D68|wg|590|4|NCBI
-Hepacivirus|wg|1245|120|NCBI
-Hepatovirus|wg|131|20|NCBI
-Monkeypox virus|wg|2129|1|NCBI
-Severe acute respiratory syndrome coronavirus|wg|2000 (random)|1|NCBI
+### Automated Reference Selection:
+VAPER comes with comprehensive reference sets for the following viral taxa (created using [EPITOME](https://github.com/DOH-JDJ0303/epitome)):
+|Taxon               |Segments  | No. References|No. Species | No. Input Sequences|
+|:-------------------|:---------|--------------:|:-----------|-------------------:|
+|Alphacoronavirus    |wg        |            201|67          |                1040|
+|Alphainfluenzavirus |1 - 8     |           2394|1           |              484876|
+|Betacoronavirus     |wg        |            140|53          |                3566|
+|Betainfluenzavirus  |1 - 8     |             94|1           |               96657|
+|Bocaparvovirus      |wg        |            104|48          |                 608|
+|Enterovirus         |wg        |           1967|26          |                6740|
+|Hantavirus          |[l; m; s] |            244|32          |                 825|
+|Hepacivirus         |wg        |            888|42          |                1060|
+|Hepatovirus         |wg        |             60|14          |                 114|
+|Lyssavirus          |wg        |            198|23          |                2126|
+|Mastadenovirus      |wg        |            128|73          |                1507|
+|Metapneumovirus     |wg        |             28|4           |                 420|
+|Morbillivirus       |wg        |            100|14          |                1176|
+|Norovirus           |wg        |            284|5           |                1148|
+|Orthoflavivirus     |wg        |            428|83          |                7960|
+|Orthopneumovirus    |wg        |             22|4           |               18344|
+|Orthopoxvirus       |wg        |             15|13          |                7885|
+|Orthorubulavirus    |wg        |             38|9           |                1053|
+|Respirovirus        |wg        |             51|17          |                 531|
 
+Click [here](https://github.com/DOH-JDJ0303/vaper/blob/dups_patch/assets/reference_sets/readme_EPITOME_2025-01-23.md) to learn more about these references.
 
-  
+### More Information:
 See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
-
-VAPER was originally written by Jared Johnson for the Washington State Department of Health.
 
 ## Quick Start
 ### Step 1: Prepare your samplesheet
@@ -52,9 +60,13 @@ nextflow run DOH-JDJ0303/VAPER \
     --max_memory 16.GB
 ```
 ## Acknowledgements
-VAPER would not be possible without the following people:\
-Holly Halstead (WA PHL) (check out her tool [varcraft](https://github.com/DOH-HNH0303/varcraft)!)\
-Pauline Trinh (WA MEP)\
-Allison Black (WA MEP)\
-Stephanie Lunn (WA MEP)\
-Kristen Waterman (WA PHL)
+**VAPER would not be possible without the following people:**
+- Holly Halstead (WA PHL) (check out her tool [varcraft](https://github.com/DOH-HNH0303/varcraft)!)
+- Pauline Trinh (WA MEP)
+- Allison Black (WA MEP)
+- Stephanie Lunn (WA MEP)
+- Kristen Waterman (WA PHL)
+- Brandi Torrevillas (WSU)
+
+VAPER was originally written by Jared Johnson for the Washington State Department of Health.
+
