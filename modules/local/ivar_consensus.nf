@@ -31,8 +31,8 @@ process IVAR_CONSENSUS {
        -n ${params.cons_amb} \\
        -t ${params.cons_ratio} \\
        -q ${params.cons_qual} \\
-       ${args}
-    
+       ${params.cons_drop ? '-k' : ''} \\
+       ${args}    
     sed -i 's/>.*/>${prefix}/g' ${prefix}.fa
     gzip ${prefix}.fa
 

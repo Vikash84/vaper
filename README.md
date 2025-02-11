@@ -5,7 +5,7 @@ VAPER is a pipeline for virus genome assembly.
 -  Builds assemblies from probe enrichment (a.k.a hybrid capture/enrichment), shotgun metagenomic, and tiled-amplicon sequence data
 -  Automated reference selection (Detects what is in your sample)
 -  Can generate multiple assemblies per sample (Useful for co-infections)
--  Predicts the taxonomy of each assembly (Also includes a *metagenomic* summary!)
+-  Predicts the taxonomy of each assembly (Also includes a viral *metagenomic* summary!)
 -  Reads associated with each assembly are exported for downstream use
 -  Can utilize iVar or IRMA assemblers (IRMA modules built on the fly!)
 
@@ -13,34 +13,34 @@ VAPER is a pipeline for virus genome assembly.
 VAPER comes with comprehensive reference sets for the following viral taxa (created using [EPITOME](https://github.com/DOH-JDJ0303/epitome)):
 |Taxon               |Segments  | No. References|No. Species | No. Input Sequences|
 |:-------------------|:---------|--------------:|:-----------|-------------------:|
-|Alphacoronavirus    |wg        |            201|67          |                1040|
-|Alphainfluenzavirus |1 - 8     |           2394|1           |              484876|
-|Betacoronavirus     |wg        |            140|53          |                3566|
-|Betainfluenzavirus  |1 - 8     |             94|1           |               96657|
-|Bocaparvovirus      |wg        |            104|48          |                 608|
-|Enterovirus         |wg        |           1967|26          |                6740|
-|Hantavirus          |l, m, s   |            244|32          |                 825|
-|Hepacivirus         |wg        |            888|42          |                1060|
-|Hepatovirus         |wg        |             60|14          |                 114|
-|Lyssavirus          |wg        |            198|23          |                2126|
-|Mastadenovirus      |wg        |            128|73          |                1507|
-|Metapneumovirus     |wg        |             28|4           |                 420|
-|Morbillivirus       |wg        |            100|14          |                1176|
-|Norovirus           |wg        |            284|5           |                1148|
-|Orthoflavivirus     |wg        |            428|83          |                7960|
-|Orthopneumovirus    |wg        |             22|4           |               18344|
-|Orthopoxvirus       |wg        |             15|13          |                7885|
-|Orthorubulavirus    |wg        |             38|9           |                1053|
-|Respirovirus        |wg        |             51|17          |                 531|
+|Alphacoronavirus    |wg        |            204|66          |                1104|
+|Alphainfluenzavirus |1 - 8     |           1921|1           |              416440|
+|Betacoronavirus     |wg        |            135|53          |                3436|
+|Betainfluenzavirus  |1 - 8     |             45|1           |              110948|
+|Bocaparvovirus      |wg        |             94|48          |                 574|
+|Enterovirus         |wg        |           1782|26          |                5870|
+|Hantavirus          |[l; m; s] |            227|31          |                 762|
+|Hepacivirus         |wg        |            790|42          |                 959|
+|Hepatovirus         |wg        |             56|14          |                 110|
+|Lyssavirus          |wg        |            197|23          |                2532|
+|Mastadenovirus      |wg        |            115|69          |                1339|
+|Metapneumovirus     |wg        |             24|3           |                 380|
+|Morbillivirus       |wg        |             87|14          |                1075|
+|Norovirus           |wg        |            245|5           |                 947|
+|Orthoflavivirus     |wg        |            371|83          |                6657|
+|Orthopneumovirus    |wg        |             18|4           |               17121|
+|Orthopoxvirus       |wg        |             14|11          |                7247|
+|Orthorubulavirus    |wg        |             28|9           |                1052|
+|Respirovirus        |wg        |             43|16          |                 549|
 
-Click [here](https://github.com/DOH-JDJ0303/vaper/blob/main/assets/reference_sets/readme_EPITOME_2025-01-23.md) to learn more about these references.
+Click [here](https://github.com/DOH-JDJ0303/vaper/blob/main/assets/reference_sets/EPITOME_2025-02-06.md) to learn more about these references.
 
 ### More Information:
 See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
 
 ## Quick Start
 ### Step 1: Prepare your samplesheet
-> Note: Nextflow requires absolute file paths.
+> [!NOTE] Nextflow requires absolute file paths.
 `samplesheet.csv`:
 
 ```csv
@@ -49,7 +49,7 @@ sample01,sample01_R1_001.fastq.gz,sample01_R2_001.fastq.gz
 sample02,sample02_R1_001.fastq.gz,sample02_R2_001.fastq.gz
 ```
 ### Step 2: Run VAPER
-> Note: This will use the default reference set. You can provide your own reference set using the `--refs` parameter.
+> [!NOTE] This will use the default reference set. You can provide your own refererences using the `reference` column in the samplesheet or using the `--refs` parameter.
 ```bash
 nextflow run DOH-JDJ0303/VAPER \
     -r main \

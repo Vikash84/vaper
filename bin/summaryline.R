@@ -30,19 +30,36 @@ if(args[1] == "version"){
   cat(version, sep = "\n")
   quit(status=0)
 }
+
+#----- Functions -----#
+getRefName <- function(filename){
+  tokens <- filename %>%
+    basename() %>%
+    strsplit('\\.') %>% 
+    unlist()
+  n_tokens <- length(tokens)
+  index <- n_tokens - 1
+  if(tokens[n_tokens] == 'gz'){
+    index <- n_tokens - 2
+  }
+  name <- paste(tokens[1:index], collapse = '.')
+  return(name)
+}
 #----- Load Reference Info -----#
 df.refs <- read_csv(refsheet) %>%
   rename_all(toupper) %>%
   group_by(ASSEMBLY) %>%
-  mutate(REFERENCE = unlist(strsplit(basename(ASSEMBLY), '\\.'))[1]) %>%
+  mutate(REFERENCE = getRefName(ASSEMBLY)) %>%
   ungroup() %>%
   select(-ASSEMBLY) %>%
   drop_na(REFERENCE) %>%
   unique()
-
+    
 #----- Sample ID & Reference
 df.summaryline <- data.frame(ID = sample, REFERENCE = ref) %>%
-  left_join(df.refs, by = "REFERENCE")
+  left_join(df.refs, by = "REFERENCE") %>%
+  mutate(REFERENCE = case_when(REFERENCE == 'No_Reference' ~ NA_character_,
+                               TRUE ~ REFERENCE))
 
 #----- Full Read Stats -----#
 df.fastp2tbl <- read_csv(fastp2tbl)
@@ -56,24 +73,16 @@ if(file.exists(samtoolstats2tbl)){
 
 #----- Nextclade -----#
 if(file.exists(nextclade)){
-  df.nextclade <- read_tsv(nextclade) %>%
-      select(qc.overallStatus,
-             totalSubstitutions,
-             totalDeletions,
-             totalInsertions,
-             totalMissing,
-             totalNonACGTNs,
-             coverage,
-             ASSEMBLY_LENGTH,
-             REF_LENGTH,
-             ASSEMBLY_TERMINAL_GAPS) %>%
-      rename(ASSEMBLY_NC = qc.overallStatus,
-             ASSEMBLY_SUBS = totalSubstitutions,
-             ASSEMBLY_DEL = totalDeletions,
-             ASSEMBLY_INS = totalInsertions,
-             ASSEMBLY_MISSING = totalMissing,
-             ASSEMBLY_NON_ATCGN = totalNonACGTNs,
-             ASSEMBLY_GEN_FRAC = coverage)
+  df.nextclade <- read_csv(nextclade, col_names = c("ASSEMBLY_LENGTH", 
+                                                    "REF_LENGTH", 
+                                                    "ASSEMBLY_SUBS",
+                                                    "ASSEMBLY_DEL", 
+                                                    "ASSEMBLY_INS", 
+                                                    "ASSEMBLY_MISSING", 
+                                                    "ASSEMBLY_TERMINI_GAPS", 
+                                                    "ASSEMBLY_NON_ACGTN", 
+                                                    "ASSEMBLY_GEN_FRAC",
+                                                    "ASSEMBLY_NC" ))
   df.summaryline <- cbind(df.summaryline, df.nextclade)
 }else(cat("\nNo assembly stats provided\n"))
 

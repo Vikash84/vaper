@@ -7,8 +7,7 @@ process TAR2REFS {
     tuple val(ref_ids), path(refs_tar)
 
     output:
-    path "select/*", emit: refs
-
+    path "select/*",    emit: refs
 
     when:
     task.ext.when == null || task.ext.when
@@ -26,6 +25,6 @@ process TAR2REFS {
     for REF in \$(cat select.csv)
     do
         cp */references/\${REF} select/
-    done    
+    done
     """
 }

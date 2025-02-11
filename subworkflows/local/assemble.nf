@@ -9,6 +9,8 @@ include { CONDENSE       } from '../../modules/local/condense'
 include { BAM_STATS      } from '../../modules/local/bam_stats'
 include { MAPPED_FASTQ   } from '../../modules/local/get_mapped_fastq'
 include { NEXTCLADE      } from '../../modules/local/nextclade'
+include { EXPORT_ALN     } from '../../modules/local/export_aln'
+
 
 workflow ASSEMBLE {
     take:
@@ -40,13 +42,13 @@ workflow ASSEMBLE {
             .out
             .bam
             .transpose()
-            .map{ meta, bam -> [ meta, bam.getSimpleName(), bam ] }
+            .map{ meta, bam -> [ meta, getRefName(bam).replace(meta.id+'_', ''), bam ] }
             .set{ ch_bam }
         IRMA
             .out
             .consensus
             .transpose()
-            .map{ meta, consensus -> [meta, consensus.getSimpleName().replace(meta.id+'_', ''), consensus] }
+            .map{ meta, consensus -> [meta, getRefName(consensus).replace(meta.id+'_', ''), consensus] }
             .set{ ch_consensus }
     }
     
@@ -106,8 +108,17 @@ workflow ASSEMBLE {
         .out
         .assembly
         .transpose()
-        .map{ meta, assembly -> [ meta, assembly.getSimpleName().replaceAll("${meta.id}_", ''), assembly ] }
+        .map{ meta, assembly -> [ meta, getRefName(assembly).replaceAll("${meta.id}_", ''), assembly ] }
         .set{ ch_consensus }
+
+    // Publish alignments of condensed assemblies
+    EXPORT_ALN (
+        ch_consensus
+          .map{ meta, ref_id, assembly -> [ meta, ref_id ] }
+          .join( ch_ref_list.map{ meta, ref_id, ref_path, reads -> [ meta, ref_id, ref_path ] }, by: [ 0, 1 ] )
+          .join( ch_bam, by: [ 0, 1 ] )
+    )
+
 
     /* 
     =============================================================================================================================
@@ -120,10 +131,53 @@ workflow ASSEMBLE {
             .combine(ch_ref_list.map{ meta, ref_id, ref_path, reads -> [ ref_path, ref_id ] }.unique(), by: 1)
     )
     ch_versions = ch_versions.mix(NEXTCLADE.out.versions)
+    
+    // Load Nextclade results
+    NEXTCLADE
+        .out
+        .json
+        .splitJson()
+        .filter{ meta, refId, samLen, refLen, item -> item.key == 'results' }
+        .map{ meta, refId, samLen, refLen, ncResults -> [ meta: meta, refId: refId ] + gatherMetrics( samLen, refLen, ncResults ) }
+        .set{ ch_nc }
+    ch_nc.map{ [ it.meta, it.refId, it.rowCsv ] }.set{ ch_nc_stats }
 
     emit:
     bam_stats = BAM_STATS.out.stats // channel: [ val(meta), val(ref), path(stats)) ]
-    nextclade = NEXTCLADE.out.tsv   // channel: [ val(meta), val(ref), path(stats)) ]
+    nextclade = ch_nc_stats         // channel: [ val(meta), val(ref), path(stats)) ]
     consensus = ch_consensus        // channel: [ val(meta), val(ref_id), path(assembly) ]
     versions  = ch_versions
+}
+
+// Remove file extension for references - allows reference names to have periods in them (GCA_7839185.1.fa.gz)
+def getRefName(filename){
+    def refname = filename
+    def tokens  = filename.getName().tokenize('\\.')
+    if(tokens.size() > 1){
+        refname = filename.toString().endsWith('.gz') ? tokens[0..-3].join('.') : tokens[0..-2].join('.')
+    }
+    
+    return refname
+}
+
+// Function for gathering assembly metrics
+def gatherMetrics( samLen, refLen, data ){
+    def metrics            = data.value[0] ? data.value[0] : null
+    def coverage           = metrics ? metrics.coverage : null
+    def status             = metrics ? metrics.qc.overallStatus : null
+    def totalSubstitutions = metrics ? metrics.totalSubstitutions : null
+    def totalDeletions     = metrics ? metrics.totalDeletions : null
+    def totalNonACGTNs     = metrics ? metrics.totalNonACGTNs : null
+    def totalInsertions    = metrics ? metrics.totalInsertions : null
+    def totalMissing       = metrics ? metrics.totalMissing : null
+    def terminiMissing     = 0
+
+    if(metrics){
+        metrics
+            .missing
+            .findAll{ it.range.begin.toInteger() <= 0 || it.range.end.toInteger() >= refLen.toInteger() }
+            .each{ terminiMissing += it.range.end.toInteger() - it.range.begin.toInteger() }
+    }
+    def rowCsv = [ samLen, refLen, totalSubstitutions, totalDeletions, totalInsertions, totalMissing, terminiMissing, totalNonACGTNs, coverage, status ].join(',')
+    return [ rowCsv: rowCsv ]
 }

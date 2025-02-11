@@ -41,11 +41,9 @@ include { COMBINE_SUMMARYLINES } from '../modules/local/combine-summary'
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
-include { CLASSIFY    } from '../subworkflows/local/classify'
-include { ASSEMBLE    } from '../subworkflows/local/assemble'
-include { VALIDATE    } from '../subworkflows/local/validate'
-
+include { PREPARE  } from '../subworkflows/local/prepare'
+include { CLASSIFY } from '../subworkflows/local/classify'
+include { ASSEMBLE } from '../subworkflows/local/assemble'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -81,15 +79,15 @@ workflow VAPER {
     =============================================================================================================================
     */
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    INPUT_CHECK (
+    PREPARE (
         file(params.input),
         file(params.refs)
     )
-    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    ch_versions = ch_versions.mix(PREPARE.out.versions)
 
-    INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reads ] }.set{ ch_reads }
-    INPUT_CHECK.out.reads.map{ meta, reads, reference, truth, inter_group, intra_group -> [ meta, reference ] }.set{ ch_refs_man }
-    INPUT_CHECK.out.refs.set{ ch_refs }
+    PREPARE.out.reads.map{ [ it.meta, it.fastq_12 ] }.set{ ch_reads }
+    PREPARE.out.reads.map{ [ it.meta, it.reference ] }.set{ ch_refs_man }
+    PREPARE.out.refs.set{ ch_refs }
 
     /* 
     =============================================================================================================================
@@ -200,14 +198,14 @@ workflow VAPER {
 
     // Combine the reference and non-reference channels & add Fastp & Sourmash results
     ch_assembly_list
-      .concat(ch_no_assembly_list)
-      .combine(FASTP.out.json, by: 0)
-      .combine(CLASSIFY.out.sm_summary, by: 0)
-      .set{ all_list }
+        .concat(ch_no_assembly_list)
+        .combine(FASTP.out.json, by: 0)
+        .combine(CLASSIFY.out.sm_summary, by: 0)
+        .set{ all_list }
 
     // MODULE: Create summaryline for each sample 
     SUMMARYLINE (
-       all_list.combine( ch_refs.map{ all, comp, tar, sheet -> sheet } )
+       all_list.combine( CLASSIFY.out.refsheet )
     )
     ch_versions = ch_versions.mix(SUMMARYLINE.out.versions)
 
@@ -223,19 +221,6 @@ workflow VAPER {
         all_summaries
     )
     ch_versions = ch_versions.mix(COMBINE_SUMMARYLINES.out.versions)
-
-    /* 
-    =============================================================================================================================
-        VALIDATE RESULTS
-    =============================================================================================================================
-    */
-
-    VALIDATE(
-        INPUT_CHECK.out.reads.map{ meta, reads, ref, truth, inter_group, intra_group -> [ meta, truth, inter_group, intra_group ] },
-        ASSEMBLE.out.consensus.map{ meta, ref_id, consensus -> [ meta, consensus ] },
-        COMBINE_SUMMARYLINES.out.summary
-    )
-    // ch_versions = ch_versions.mix(VALIDATE.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

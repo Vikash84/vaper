@@ -29,11 +29,16 @@ if(args[1] == "version"){
 }
 
 #----- FUNCTIONS -----#
-qcCheck <- function(gf, gf_threshold, depth, depth_threshold){
+qcCheck <- function(ref, gf, gf_threshold, depth, depth_threshold){
   if(is.na(gf) || is.na(depth)){
-    # No assembly
-    status <- NA_character_
-    reason <- NA_character_
+    if(!is.na(ref)){
+      status <- 'FAIL'
+      reason <- 'No assembly'
+    }else{
+      # No assembly
+      status <- NA_character_
+      reason <- NA_character_
+    }
   }else{
     # Default status
     status <- 'PASS'
@@ -77,8 +82,8 @@ col.list <- c("ID",
          "ASSEMBLY_DEL",
          "ASSEMBLY_INS",
          "ASSEMBLY_MISSING",
-         "ASSEMBLY_NON_ATCGN",
-         "ASSEMBLY_TERMINAL_GAPS",
+         "ASSEMBLY_NON_ACGTN",
+         "ASSEMBLY_TERMINI_GAPS",
          "PERC_READS_MAPPED",
          "PERC_BASES_MAPPED",
          "READS_MAPPED",
@@ -95,7 +100,8 @@ col.list <- c("ID",
          "READ1_MEAN_LENGTH_RAW",
          "READ2_MEAN_LENGTH_RAW",
          "Q30_RATE_RAW",
-         "SPECIES_SUMMARY")
+         "SPECIES_SUMMARY",
+         "REF_INFO")
 
 df.empty <- matrix(ncol = length(col.list), nrow = 1) %>%
   data.frame()
@@ -107,13 +113,13 @@ files <- list.files("./", pattern = ".csv", full.names = T)
 # combine all lines
 mergeTables <- function(file){
   read_csv(file) %>%
+    mutate(across(where(is.character), ~na_if(., "null"))) %>%
     mutate_all(as.character) %>%
     return()
 }
 df <- do.call(bind_rows, lapply(files, FUN=mergeTables)) %>%
-  bind_rows(df.empty)
-
-
+  bind_rows(df.empty) %>%
+  drop_na(ID)
 #----- GATHER FINAL METRICS -----#
 # depth of coverage & percent read/bp mapping
 df <- df %>%
@@ -123,20 +129,23 @@ df <- df %>%
 # QC status
 df <- df %>%
   group_by(ID,REFERENCE) %>%
-  mutate (ASSEMBLY_QC = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[1]),
-          ASSEMBLY_QC_REASON = unlist(qcCheck(ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[2])) %>%
+  mutate (ASSEMBLY_QC = unlist(qcCheck(REFERENCE,ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[1]),
+          ASSEMBLY_QC_REASON = unlist(qcCheck(REFERENCE,ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[2])) %>%
   ungroup() %>%
   select(-any_of(c('ASSEMBLY_NC')))
 # summarize assembly variants
+df
 df <- df %>%
   group_by(ID,SPECIES,SEGMENT) %>%
-  mutate(ASSEMBLY_VARIANT = paste0(row_number()," of ", n())) %>%
+  mutate(ASSEMBLY_VARIANT = case_when( !is.na(SPECIES) ~ paste0(row_number()," of ", n()),
+                                        TRUE ~ NA_character_ )) %>%
   ungroup()
 
 # order columns
 allCols <- colnames(df)
 df <- df %>%
   select(all_of(c(col.list, allCols[!(allCols %in% col.list)]))) %>%
+  select_if(~ !all(is.na(.))) %>%
   drop_na(ID)
 # save combined summary
 write.csv(x=df, file="combined-summary.csv", row.names = F, quote = F)

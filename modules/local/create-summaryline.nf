@@ -3,7 +3,7 @@ process SUMMARYLINE {
     label 'process_low'
 
     input:
-    tuple val(meta), val(ref_id), path(bam_stats), path(nextclade), path(fastp_json), path(sm_summary), path(refsheet)
+    tuple val(meta), val(ref_id), path(bam_stats), val(nextclade), path(fastp_json), path(sm_summary), path(refsheet)
 
     output:
     tuple val(meta), path("*.summaryline.csv"), emit: summaryline
@@ -13,10 +13,10 @@ process SUMMARYLINE {
     when:
     task.ext.when == null || task.ext.when
 
-    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix = task.ext.prefix ?: "${meta.id}_${ref_id}"
     script:
     """
-    # format reports to tables
+    # Format reports to tables
     ## Fastp
     fastp2tbl.sh ${fastp_json} > ${prefix}.fastp2tbl.csv
     ## Mapping stats
@@ -24,14 +24,16 @@ process SUMMARYLINE {
     then
         samtoolstats2tbl.sh ${bam_stats} > ${prefix}.samtoolstats2tbl.csv
     fi
+    ## Nextclade
+    echo "${nextclade}" > nextclade.csv
     
-    # extract refsheet
-    zcat ${refsheet} > refsheet.csv
+    # Extract refsheet
+    ${refsheet.name.endsWith('.gz') ? 'zcat' : 'cat'} ${refsheet} > refsheet
 
-    # create summaryline
-    summaryline.R ${prefix}.fastp2tbl.csv "${sm_summary}" ${prefix}.samtoolstats2tbl.csv "${nextclade}" "${prefix}" "${ref_id}" refsheet.csv
+    # Create summaryline
+    summaryline.R ${prefix}.fastp2tbl.csv "${sm_summary}" ${prefix}.samtoolstats2tbl.csv nextclade.csv "${meta.id}" "${ref_id}" refsheet
     # rename using prefix and reference
-    mv summaryline.csv "${prefix}-${ref_id}.summaryline.csv"
+    mv summaryline.csv "${prefix}.summaryline.csv"
     
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

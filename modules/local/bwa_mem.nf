@@ -11,8 +11,8 @@ process BWA_MEM {
     tuple val(meta), val(ref_id), path(ref), path(reads)
 
     output:
-    tuple val(meta), val(ref_id), path('*.bam'),           emit: bam
-    path "versions.yml",                                   emit: versions
+    tuple val(meta), val(ref_id), path('*.bam'), emit: bam
+    path "versions.yml",                         emit: versions
 
     when:
     task.ext.when == null || task.ext.when

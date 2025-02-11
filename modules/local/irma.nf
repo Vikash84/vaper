@@ -56,7 +56,7 @@ process IRMA {
             ;;
     esac
     ## set QC thresholds
-    echo -e 'MIN_AMBIG=${params.cons_ratio}\nMIN_CONS_SUPPORT=${params.cons_depth}\nMIN_CONS_QUALITY=${params.cons_qual}\nDEL_TYPE=${ params.cons_amb == 'N' ? 'NNN' : params.cons_amb }' >> irma.config
+    echo -e 'MIN_AMBIG=${params.cons_ratio}\nMIN_CONS_SUPPORT=${params.cons_depth}\nMIN_CONS_QUALITY=${params.cons_qual}\nDEL_TYPE=${ params.cons_drop ? '' : ( params.cons_amb == 'N' ? 'NNN' : params.cons_amb ) }' >> irma.config
     ## set elongation option
     echo -e 'SKIP_E=${ params.cons_elong ? '1' : '0' }' >> irma.config
          

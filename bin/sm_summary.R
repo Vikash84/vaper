@@ -15,6 +15,7 @@ library(readr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(RColorBrewer)
 
 # load args
 args <- commandArgs(trailingOnly=T)
@@ -54,6 +55,8 @@ if(nrow(df) > 0){
       mutate(Species = factor(Species, levels = Species))
 
     # create plot & save
+    colors <- rev(colorRampPalette(palette.colors(palette = "Okabe-Ito"))(length(unique(df$Species))))
+
     p <- df %>%
       filter(Species != 'unclassified') %>%
       mutate(ymax = cumsum(100*classified_fraction),
@@ -69,7 +72,8 @@ if(nrow(df) > 0){
             axis.title.y=element_blank(),
             panel.background=element_blank(),
             panel.grid.major=element_blank(),
-            panel.grid.minor=element_blank())
+            panel.grid.minor=element_blank())+
+            scale_fill_manual( values = colors )
     ggsave(plot = p, filename = paste0(prefix,".taxa-plot.jpg"), dpi = 300, height = 10, width = 15)
 
     # create summaryline

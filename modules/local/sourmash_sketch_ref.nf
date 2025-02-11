@@ -9,7 +9,7 @@ process SM_SKETCH_REF {
         'biocontainers/sourmash:4.8.4--hdfd78af_0' }"
 
     input:
-    path sequence
+    path ref_tar
 
     output:
     path "*.sig",        emit: signatures
@@ -22,9 +22,12 @@ process SM_SKETCH_REF {
     // required defaults for the tool to run, but can be overridden
     def args = task.ext.args ?: "dna --param-string 'scaled=1000,k=21,k=31,k=51,abund'"
     """
+    # extract files
+    tar xzvf ${ref_tar}
+    # make signature for each
     sourmash sketch \\
         $args \\
-        $sequence
+        */references/*
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

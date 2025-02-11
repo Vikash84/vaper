@@ -87,24 +87,19 @@
                 "ref_mode": {
                     "type": "string",
                     "default": "accurate",
-                    "description": "Reference selection mode ('accurate' or 'fast'). Accurate mode selects references by aligning contigs from a de novo assembly to the supplied references using Minimap2. Fast mode selects references using Sourmash. Fast mode is experimental and should be used with caution. It is much less accurate and sensitive than the accuracte mode and is only faster when you have a very large number of samples.",
+                    "description": "Reference selection mode ('accurate', 'fast', 'kitchen-sink', or 'none'). Accurate mode selects references from a supplied reference set by competitively aligning contigs from a de novo assembly using Minimap2. Fast mode selects references from a supplied reference set using Sourmash. Kitchen-sink mode selects references from NCBI using the Sourmash metagenomic summary. None mode will skip reference selection (references must be supplied in samplesheet).",
                     "fa_icon": "fas fa-tachometer-alt"
                 },
                 "ref_genfrac": {
                     "type": "number",
                     "default": 0.1,
-                    "description": "Minimum genome fraction used for reference selection. Consensus assemblies will only be generated if proportion of the reference detected in the sample exceeds this value.  This differs from the genome fraction threshold used for the final quality assessment (i.e., --qc_genfrac). In general, this value should be lower than the QC threshold, to account for de novo assembly errors.",
+                    "description": "Minimum genome fraction used for reference selection. Consensus assemblies will only be generated if the proportion of the reference detected in the sample exceeds this value.  This differs from the genome fraction threshold used for the final quality assessment (i.e., --qc_genfrac). In general, this value should be lower than the QC threshold, to account for de novo assembly errors.",
                     "fa_icon": "fas fa-chart-pie"
                 },
                 "ref_covplot": {
                     "type": "boolean",
-                    "description": "Experimental feature that creates coverage plots for all mapped references.",
+                    "description": "Create reference coverage plots ('accurate' reference selection mode only)",
                     "fa_icon": "fas fa-chart-pie"
-                },
-                "ref_kitchensink": {
-                    "type": "boolean",
-                    "description": "Creates consensus assemblies for all species identified by sourmash. This option automatically downloads reference assemblies from NCBI using the 'datasets' tool. This can create a large number of assemblies and should be used with care.",
-                    "fa_icon": "fas fa-sink"
                 }
             },
             "fa_icon": "fas fa-dna"
@@ -206,7 +201,7 @@
                     "default": 0.9,
                     "description": "Minimum genome fraction used for the final quality assessment. This differs from the minimum genome fraction used for reference selection (i.e., --ref_genfrac). In general, this value should be higher than the reference selection threshold.",
                     "fa_icon": "fas fa-chart-pie"
-                }
+                } 
             },
             "fa_icon": "fas fa-chart-pie"
         },
