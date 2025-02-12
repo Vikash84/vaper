@@ -33,7 +33,7 @@ VAPER comes with comprehensive reference sets for the following viral taxa (crea
 |Orthorubulavirus    |wg        |             28|9           |                1052|
 |Respirovirus        |wg        |             43|16          |                 549|
 
-Click [here](https://github.com/DOH-JDJ0303/vaper/blob/main/assets/reference_sets/EPITOME_2025-02-06.md) to learn more about these references.
+Click [here](https://github.com/DOH-JDJ0303/vaper/blob/main/assets/reference_sets/EPITOME_2025-02-12.md) to learn more about these references.
 
 ### More Information:
 See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
