@@ -1,6 +1,6 @@
 # VAPER: Viral Assembly from Probe-based EnRichment
 ## Overview
-VAPER is a pipeline for virus genome assembly.
+VAPER is a viral (meta-)genome assembly pipeline.
 ### Key Features:
 -  Builds assemblies from probe enrichment (a.k.a hybrid capture/enrichment), shotgun metagenomic, and tiled-amplicon sequence data
 -  Automated reference selection (Detects what is in your sample)
