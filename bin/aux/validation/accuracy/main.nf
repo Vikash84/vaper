@@ -197,6 +197,10 @@ workflow {
         .map{ [ it.sample, it ] }
         .join( ch_read_metrics.map{ [ it.sample, it ] }, by: 0, remainder: true )
         .map{ sample, assembly_metrics, read_metrics -> assembly_metrics + ( read_metrics instanceof LinkedHashMap ? read_metrics : [ ] ) }
+        .map{ it.assembly = it.sample.seq
+              it.sample = it.sample.id
+              it 
+        }
         .set{ ch_all_metrics }
     // Get a list of linked hashmap keys across all samples and fill any missing keys in each sample with 'null'
     ch_all_metrics
@@ -233,12 +237,13 @@ def checkSampleSheet(LinkedHashMap row){
     
     // Check if input files exist
     def assembly = file(row.assembly, checkIfExists: true)
-    def truth = file(row.truth, checkIfExists: true)
-    def fastq_1 = row.fastq_1 ? file(row.fastq_1, checkIfExists: true) : null
-    def fastq_2 = row.fastq_2 ? file(row.fastq_2, checkIfExists: true) : null
-    def fastq_l = row.fastq_l ? file(row.fastq_l, checkIfExists: true) : null
+    def truth    = file(row.truth, checkIfExists: true)
+    def fastq_1  = row.fastq_1 ? file(row.fastq_1, checkIfExists: true) : null
+    def fastq_2  = row.fastq_2 ? file(row.fastq_2, checkIfExists: true) : null
+    def fastq_l  = row.fastq_l ? file(row.fastq_l, checkIfExists: true) : null
+    def sample   = [ id: row.sample, seq: assembly.getSimpleName() ]
 
-    return [ sample: row.sample, assembly: assembly, truth: truth, fastq_1: fastq_1, fastq_2: fastq_2, fastq_l: fastq_l ]
+    return [ sample: sample, assembly: assembly, truth: truth, fastq_1: fastq_1, fastq_2: fastq_2, fastq_l: fastq_l ]
 }
 
 // Function for getting the length of all contigs in a fasta file
@@ -333,9 +338,10 @@ process MINIMAP2_ASM {
     output:
     tuple val(sample), path("*.paf"),   emit: paf
 
-    shell:
+    script:
+    prefix = "${sample.id}_${sample.seq}"
     """
-    minimap2 -x asm20 ${truth} ${assembly} > ${sample}.paf
+    minimap2 -x asm20 ${truth} ${assembly} > ${prefix}.paf
     """
 }
 
@@ -349,15 +355,16 @@ process BEDTOOLS {
     tuple val(sample), path("*.fa"), val("${bed[2]-bed[0]}"), emit: fa
 
     script:
+    prefix = "${sample.id}_${sample.seq}"
     """
     echo "${bed.join('\t')}" > coords.bed
-    bedtools getfasta -fi ${assembly} -fo "${sample}.${bed[1]}-${bed[2]}.fa" -bed coords.bed
+    bedtools getfasta -fi ${assembly} -fo "${prefix}.${bed[1]}-${bed[2]}.fa" -bed coords.bed
     """
 }
 
 process NEXTCLADE {
     container 'docker.io/nextstrain/nextclade:3.9.1'
-    publishDir "${params.outdir}/nextclade/${sample}/", mode: 'symlink'
+    publishDir "${params.outdir}/nextclade/${prefix}/", mode: 'symlink'
 
     input:
     tuple val(sample), path(assembly), path(truth)
@@ -367,6 +374,7 @@ process NEXTCLADE {
     tuple val(sample), path("results/*.json"),  emit: json
     
     script:
+    prefix = "${sample.id}_${sample.seq}"
     """
     nextclade run -r ${truth} -O results ${assembly}
     """
@@ -381,16 +389,14 @@ process SEQTK_SAMPLE {
     output:
     tuple val(sample), path("*.fastq.gz"), val(read_type), emit: reads
 
-    
-
     script:
     if( read_type == 'short' ){
-        cmd = "seqtk sample ${reads[0]} ${params.read_limit} > ${sample}_R1.fastq"
+        cmd = "seqtk sample ${reads[0]} ${params.read_limit} > ${sample.id}_R1.fastq"
         if( { reads[1] } ){
-            cmd = "${cmd} && seqtk sample ${reads[0]} ${params.read_limit} > ${sample}_R2.fastq"
+            cmd = "${cmd} && seqtk sample ${reads[0]} ${params.read_limit} > ${sample.id}_R2.fastq"
         }
     }else{
-        cmd = "seqtk sample ${reads} ${params.read_limit} > ${sample}_long.fastq"
+        cmd = "seqtk sample ${reads} ${params.read_limit} > ${sample.id}_long.fastq"
     }
     """
     $cmd
@@ -409,6 +415,7 @@ process BWA_MEM {
     tuple val(sample), path('*bam'), emit: aln
 
     script:
+    prefix = "${sample.id}_${sample.seq}"
     """
     # setup for pipe
     set -euxo pipefail
@@ -417,7 +424,7 @@ process BWA_MEM {
     bwa index ${truth}
 
     # run bwa mem, select only mapped reads, convert to .bam, and sort
-    bwa mem -t ${task.cpus} ${truth} ${reads[0]} ${reads[1] ? reads[1] : ''} | samtools view -b -F 4 - | samtools sort - > ${sample}.bam
+    bwa mem -t ${task.cpus} ${truth} ${reads[0]} ${reads[1] ? reads[1] : ''} | samtools view -b -F 4 - | samtools sort - > ${prefix}.bam
     """
 }
 
@@ -431,12 +438,13 @@ process MINIMAP2_MAP {
     tuple val(sample), path('*bam'), emit: aln
 
     script:
+    prefix = "${sample.id}_${sample.seq}"
     """
     # setup for pipe
     set -euxo pipefail
 
     # run bwa mem, select only mapped reads, convert to .bam, and sort
-    minimap2 -a -x map-ont -t ${task.cpus} ${truth} ${reads} | samtools view -b -F 4 - | samtools sort - > ${sample}.bam
+    minimap2 -a -x map-ont -t ${task.cpus} ${truth} ${reads} | samtools view -b -F 4 - | samtools sort - > ${prefix}.bam
     """
 }
 
@@ -450,8 +458,9 @@ process SAMTOOLS_COVERAGE {
     tuple val(sample), path("*.coverage.txt"), emit: coverage
 
     script:
+    prefix = "${sample.id}_${sample.seq}"
     """ 
     # gather read stats
-    samtools coverage ${sample}.bam > ${sample}.coverage.txt
+    samtools coverage ${sample}.bam > ${prefix}.coverage.txt
     """
 }

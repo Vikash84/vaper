@@ -91,9 +91,11 @@ process IRMA {
         REF_ID=\${FILE%.fasta}
         PREFIX="${prefix}_\${REF_ID}"
 
-        # return fasta 
+        # return fasta
         assembly="\${assembly_path}\${REF_ID}\${assembly_ext}"
-        cat \${assembly} | gzip > \${PREFIX}.fa.gz
+        echo ">\${PREFIX}" > \${PREFIX}.fa
+        cat \${assembly} | grep -v '>' >> \${PREFIX}.fa
+        gzip \${PREFIX}.fa
     done
 
     # clean up

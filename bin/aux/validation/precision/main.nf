@@ -13,7 +13,6 @@ def result_file = file(params.outdir).resolve('metrics.csv')
 // Check parameters
 if( ! params.input ){ exit 1, "Please supply a samplesheet using the '--input' paramater." }
 if( ! file(params.input).exists() ){ exit 1, "${params.input} does not exist!" }
-if( params.length_threshold < 1 ){ exit 1, "'--length_threshold' must be greater than 1" }
 
 /*
 =============================================================================================================================
