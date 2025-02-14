@@ -14,7 +14,7 @@ VAPER comes with comprehensive reference sets for the following viral taxa (crea
 |Taxon               |Segments  | No. References|No. Species | No. Input Sequences|
 |:-------------------|:---------|--------------:|:-----------|-------------------:|
 |Alphacoronavirus    |wg        |            204|66          |                1104|
-|Alphainfluenzavirus |1 - 8     |           1921|1           |              416440|
+|Alphainfluenzavirus |1 - 8     |           1939|1           |              385051|
 |Betacoronavirus     |wg        |            135|53          |                3436|
 |Betainfluenzavirus  |1 - 8     |             45|1           |              110948|
 |Bocaparvovirus      |wg        |             94|48          |                 574|
