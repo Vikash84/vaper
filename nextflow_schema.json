@@ -100,33 +100,24 @@
                     "type": "boolean",
                     "description": "Create reference coverage plots ('accurate' reference selection mode only)",
                     "fa_icon": "fas fa-chart-pie"
-                }
-            },
-            "fa_icon": "fas fa-dna"
-        },
-        "classification_options_de_novo_assembly": {
-            "title": "Classification options: De novo assembly",
-            "type": "object",
-            "description": "",
-            "default": "",
-            "properties": {
-                "denovo_assembler": {
+                },
+                "ref_denovo_assembler": {
                     "type": "string",
                     "default": "megahit",
                     "description": "De novo assembler for Shovill ('spades', 'megahit', 'velvet', 'skesa'')\""
                 },
-                "denovo_contigcov": {
+                "ref_denovo_contigcov": {
                     "type": "integer",
                     "default": 1,
                     "description": "Minimum depth of coverage for a contig to be retained in the de novo assembly."
                 },
-                "denovo_contiglen": {
+                "ref_denovo_contiglen": {
                     "type": "integer",
                     "default": 100,
                     "description": "Minimum length for a contig to be retained in the de novo assembly."
                 }
             },
-            "fa_icon": "fas fa-puzzle-piece"
+            "fa_icon": "fas fa-dna"
         },
         "assembly_options_consensus_assembly": {
             "title": "Assembly options: Consensus assembly",
@@ -438,9 +429,6 @@
         },
         {
             "$ref": "#/definitions/classification_options_reference_selection"
-        },
-        {
-            "$ref": "#/definitions/classification_options_de_novo_assembly"
         },
         {
             "$ref": "#/definitions/assembly_options_consensus_assembly"
