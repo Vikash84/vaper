@@ -15,6 +15,8 @@ include { SUMMARIZE_TAXA      } from '../../modules/local/summarize_taxa'
 include { TAR2REFS            } from '../../modules/local/tar2refs'
 include { SM2REFS             } from '../../modules/local/sm2refs'
 include { NCBI_DATASETS       } from '../../modules/local/ncbi-datasets'
+include { FINALIZE_REFS       } from '../../modules/local/finalize-refs'
+
 
 workflow CLASSIFY {
     take:
@@ -212,9 +214,20 @@ workflow CLASSIFY {
             .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
             .set{ ch_ref_list }        
     }
-
     // Combine any manually supplied reference paths
     ch_ref_list.concat( ch_man_refs.external ).set{ ch_ref_list }
+    // Perform final check on all references
+    FINALIZE_REFS (
+        ch_ref_list
+            .map{ meta, ref_id, ref -> [ ref_id, ref ] }
+            .unique()
+    ).refs.set{ ch_refs_final }
+    // Update finalized refs
+    ch_ref_list
+        .map{ meta, ref_id, ref -> [ ref_id, meta ] }
+        .combine( ch_refs_final, by: 0 )
+        .map{ ref_id, meta, ref -> [ meta, ref_id, ref ] }
+        .set{ ch_ref_list }
 
     emit:
     ref_list   = ch_ref_list                   // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]

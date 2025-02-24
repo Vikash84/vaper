@@ -27,11 +27,9 @@ process IVAR_CONSENSUS {
     samtools mpileup -aa -A -Q 0 -d 0 ${bam} | \\
        ivar consensus \\
        -p ${prefix} \\
-       -m ${params.cons_depth} \\
-       -n ${params.cons_amb} \\
-       -t ${params.cons_ratio} \\
-       -q ${params.cons_qual} \\
-       ${params.cons_drop ? '-k' : ''} \\
+       -m ${params.cons_allele_depth} \\
+       -t ${params.cons_allele_ratio} \\
+       -q ${params.cons_allele_qual} \\
        ${args}    
     sed -i 's/>.*/>${prefix}/g' ${prefix}.fa
     gzip ${prefix}.fa
