@@ -30,26 +30,14 @@ workflow ASSEMBLE {
     if (params.cons_assembler == "irma"){
         // MODULE: Run IRMA
         IRMA (
-            ch_ref_list.groupTuple(by:0).map{ meta, ref_ids, ref_paths, reads -> [ meta, ref_paths, reads.get(0) ]},
+            ch_ref_list,
             file("${baseDir}/assets/IRMA_MODULE/", checkIfExists: true)
         )
         ch_versions = ch_versions.mix(IRMA.out.versions)
 
-        /*
-        Troubleshooting
-        */
-        IRMA
-            .out
-            .bam
-            .transpose()
-            .map{ meta, bam -> [ meta, getRefName(bam).replace(meta.id+'_', ''), bam ] }
-            .set{ ch_bam }
-        IRMA
-            .out
-            .consensus
-            .transpose()
-            .map{ meta, consensus -> [meta, getRefName(consensus).replace(meta.id+'_', ''), consensus] }
-            .set{ ch_consensus }
+        // Create consensus and bam channels
+        IRMA.out.bam.set{ ch_bam }
+        IRMA.out.consensus.set{ ch_consensus }
     }
     
     /* 

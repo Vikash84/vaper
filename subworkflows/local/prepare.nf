@@ -56,7 +56,7 @@ workflow PREPARE {
     =============================================================================================================================
     */
     // Get all references into compressed format
-    if (! refs.toString().endsWith('.tar.gz')){
+    if (! refs.toString().endsWith('.tar.gz') ){
         // MODULE: Compress references into tar.gz file
         REFS2TAR (
             Channel
