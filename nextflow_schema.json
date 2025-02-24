@@ -99,22 +99,25 @@
                 "ref_covplot": {
                     "type": "boolean",
                     "description": "Create reference coverage plots ('accurate' reference selection mode only)",
-                    "fa_icon": "fas fa-chart-pie"
+                    "fa_icon": "fas fa-image"
                 },
                 "ref_denovo_assembler": {
                     "type": "string",
                     "default": "megahit",
-                    "description": "De novo assembler for Shovill ('spades', 'megahit', 'velvet', 'skesa'')\""
+                    "description": "De novo assembler for Shovill ('spades', 'megahit', 'velvet', 'skesa'')\"",
+                    "fa_icon": "fas fa-puzzle-piece"
                 },
                 "ref_denovo_contigcov": {
                     "type": "integer",
                     "default": 1,
-                    "description": "Minimum depth of coverage for a contig to be retained in the de novo assembly."
+                    "description": "Minimum depth of coverage for a contig to be retained in the de novo assembly.",
+                    "fa_icon": "fas fa-align-center"
                 },
                 "ref_denovo_contiglen": {
                     "type": "integer",
                     "default": 100,
-                    "description": "Minimum length for a contig to be retained in the de novo assembly."
+                    "description": "Minimum length for a contig to be retained in the de novo assembly.",
+                    "fa_icon": "fas fa-align-justify"
                 }
             },
             "fa_icon": "fas fa-dna"
@@ -131,46 +134,40 @@
                     "description": "Consensus assembler ('irma' or 'ivar').",
                     "fa_icon": "fas fa-puzzle-piece"
                 },
-                "cons_type": {
+                "cons_assembly_type": {
                     "type": "string",
-                    "default": "default",
-                    "description": "The consensus assembly version that should be returned: 'plurality', 'amended', or 'padded' (default: 'amended'). This option only applies to IRMA (ignored by iVar).",
-                    "fa_icon": "far fa-copy"
+                    "default": "consensus",
+                    "fa_icon": "fas fa-align-justify",
+                    "description": "Method used for creating the reference-based assembly (\"consensus\", \"plurality\", \"padded\")"
                 },
-                "cons_qual": {
-                    "type": "integer",
-                    "default": 20,
-                    "description": "Minimum allele quality for consensus assembly generation.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "cons_ratio": {
-                    "type": "number",
-                    "default": 0.5,
-                    "description": "Minimum allele support for consensus assembly generation.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "cons_depth": {
-                    "type": "integer",
-                    "default": 30,
-                    "description": "Minimum allele depth for consensus assembly generation.",
-                    "fa_icon": "fas fa-chart-pie"
-                },
-                "cons_amb": {
+                "cons_assembly_elong": {
                     "type": "string",
-                    "default": "N",
-                    "fa_icon": "fas fa-chart-pie",
-                    "description": "Character used for ambiguous bases ('N', 'DEL', 'REF'). 'DEL' and 'REF' options only apply to IRMA."
-                },
-                "cons_elong": {
-                    "type": "boolean",
-                    "description": "Option to use elongation feature with IRMA. This is ignored for iVar.",
-                    "fa_icon": "fas fa-chart-pie"
+                    "fa_icon": "fas fa-arrows-alt-h",
+                    "description": "Use IRMA \"elongation\" feature."
                 },
                 "cons_condist": {
                     "type": "number",
                     "default": 0.02,
                     "fa_icon": "fas fa-chart-pie",
                     "description": "Average nucleotide difference used to condense duplicate assemblies 1-(%ANI/100). Set this to 0 if you want to skip the condense step."
+                },
+                "cons_allele_qual": {
+                    "type": "integer",
+                    "default": 20,
+                    "fa_icon": "fas fa-chart-pie",
+                    "description": "Minimum allele quality when making the reference-based assembly."
+                },
+                "cons_allele_ratio": {
+                    "type": "number",
+                    "default": 0.6,
+                    "fa_icon": "fas fa-chart-pie",
+                    "description": "Minimum allele support when making the reference-based assembly."
+                },
+                "cons_allele_depth": {
+                    "type": "integer",
+                    "default": 10,
+                    "fa_icon": "fas fa-chart-pie",
+                    "description": "Minimum allele depth when making the reference-based assembly."
                 }
             },
             "fa_icon": "fas fa-puzzle-piece"
@@ -192,31 +189,9 @@
                     "default": 0.9,
                     "description": "Minimum genome fraction used for the final quality assessment. This differs from the minimum genome fraction used for reference selection (i.e., --ref_genfrac). In general, this value should be higher than the reference selection threshold.",
                     "fa_icon": "fas fa-chart-pie"
-                } 
+                }
             },
             "fa_icon": "fas fa-chart-pie"
-        },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details.",
-                    "hidden": true
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
-                }
-            }
         },
         "institutional_config_options": {
             "title": "Institutional config options",
@@ -435,9 +410,6 @@
         },
         {
             "$ref": "#/definitions/assembly_options_quality_control"
-        },
-        {
-            "$ref": "#/definitions/reference_genome_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
