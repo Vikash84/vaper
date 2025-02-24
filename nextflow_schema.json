@@ -141,7 +141,7 @@
                     "description": "Method used for creating the reference-based assembly (\"consensus\", \"plurality\", \"padded\")"
                 },
                 "cons_assembly_elong": {
-                    "type": "string",
+                    "type": "boolean",
                     "fa_icon": "fas fa-arrows-alt-h",
                     "description": "Use IRMA \"elongation\" feature."
                 },
