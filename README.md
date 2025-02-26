@@ -40,7 +40,8 @@ See the [wiki](https://github.com/DOH-JDJ0303/VAPER/wiki) for more information.
 
 ## Quick Start
 ### Step 1: Prepare your samplesheet
-> [!NOTE] Nextflow requires absolute file paths.
+> [!NOTE]
+> Nextflow requires absolute file paths.
 `samplesheet.csv`:
 
 ```csv
@@ -49,7 +50,8 @@ sample01,sample01_R1_001.fastq.gz,sample01_R2_001.fastq.gz
 sample02,sample02_R1_001.fastq.gz,sample02_R2_001.fastq.gz
 ```
 ### Step 2: Run VAPER
-> [!NOTE] This will use the default reference set. You can provide your own refererences using the `reference` column in the samplesheet or using the `--refs` parameter.
+> [!NOTE]
+> This will use the default reference set. You can provide your own refererences using the `reference` column in the samplesheet or using the `--refs` parameter.
 ```bash
 nextflow run DOH-JDJ0303/VAPER \
     -r main \
