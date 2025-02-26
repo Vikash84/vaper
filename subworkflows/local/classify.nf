@@ -80,6 +80,19 @@ workflow CLASSIFY {
         SOURMASH_METAGENOME.out.result
     )
     ch_versions = ch_versions.mix(SUMMARIZE_TAXA.out.versions)
+    // Acount for samples that had no metagenome
+    SUMMARIZE_TAXA
+        .out
+        .sm_summary
+        .join(ch_reads.map{ meta, reads -> meta }, by: 0, remainder: true)
+        .map{ meta, summary -> if(summary){
+                [ meta, summary ]
+            }else{
+                fwork = file(workflow.workDir).resolve("${meta.id}-sm_summary.txt")
+                fwork.text = '100% unclassified'
+                [ meta, fwork ]
+            }
+        }.set{ ch_sm_summary }
 
     /* 
     =============================================================================================================================
@@ -156,7 +169,7 @@ workflow CLASSIFY {
             .splitCsv(header: true, decompress: true)
             .filter{ meta, data -> data.f_match >= params.ref_genfrac && data.average_abund >= params.qc_depth }
             .map{ meta, data -> [ meta, data.filename.replaceAll('.sig$', '') ] }
-            .concat(ch_man_refs.internal.map{ meta, ref_id, ref -> [ meta, ref_id ] })
+            .concat(ch_man_refs.internal.map{ meta, ref_id, ref -> [ meta, ref_id.replaceAll('.sig$', '') ] })
             .set{ ch_ref_list }
     }
 
@@ -200,7 +213,7 @@ workflow CLASSIFY {
         // MODULE: Gather references from the tar file
         TAR2REFS (
             ch_ref_list
-                .map{ meta, ref_id -> ref_id.replaceAll('.sig$', '') }
+                .map{ meta, ref_id -> ref_id }
                 .unique()
                 .filter{ it != 'none_selected' }
                 .collect()
@@ -230,10 +243,10 @@ workflow CLASSIFY {
         .set{ ch_ref_list }
 
     emit:
-    ref_list   = ch_ref_list                   // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]
-    refsheet   = ch_refsheet                   // channel: [ path(refinfo.csv) ]
-    sm_summary = SUMMARIZE_TAXA.out.sm_summary // channel: [ val(meta), val(result) ]
-    versions   = ch_versions                   // channel: [ versions.yml ]
+    ref_list   = ch_ref_list    // channel: [ val(sample_meta), val(ref_id), path(ref_path) ]
+    refsheet   = ch_refsheet    // channel: [ path(refinfo.csv) ]
+    sm_summary = ch_sm_summary  // channel: [ val(meta), val(result) ]
+    versions   = ch_versions    // channel: [ versions.yml ]
 }
 
 // Remove file extension for references - allows reference names to have periods in them (GCA_7839185.1.fa.gz)
