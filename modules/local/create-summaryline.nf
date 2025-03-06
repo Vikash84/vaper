@@ -25,7 +25,10 @@ process SUMMARYLINE {
         samtoolstats2tbl.sh ${bam_stats} > ${prefix}.samtoolstats2tbl.csv
     fi
     ## Nextclade
-    echo "${nextclade}" > nextclade.csv
+    if [ "${nextclade}" != "[]" ]
+    then
+        echo "${nextclade}" > nextclade.csv
+    fi 
     
     # Extract refsheet
     ${refsheet.name.endsWith('.gz') ? 'zcat' : 'cat'} ${refsheet} > refsheet

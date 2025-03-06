@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-version <- "1.0"
+version <- "1.1"
 
 # combine-summary.R
 # Author: Jared Johnson, jared.johnson@doh.wa.gov
@@ -42,24 +42,24 @@ qcCheck <- function(ref, gf, gf_threshold, depth, depth_threshold){
   }else{
     # Default status
     status <- 'PASS'
-    reason <- NA_character_
+    reason_gf <- NA_character_
+    reason_depth <- NA_character_
+
     # Genome fraction
     if(as.numeric(gf) < as.numeric(gf_threshold)){
       status <- 'FAIL'
       reason_gf <- paste0('Genome fraction below ',gf_threshold)
-      reason <- reason_gf
     }
     # Depth of coverage
     if(as.numeric(depth) < as.numeric(depth_threshold)){
       status <- 'FAIL'
       reason_depth <- paste0('Depth of coverage below ',depth_threshold,"X")
-      if(!is.na(reason)){
-        reason <- paste(reason_depth, collapse = '; ')
-      }else{
-        reason <- reason_depth
-      }
-  }
-
+    }
+    reason <- c(reason_gf, reason_depth) %>%
+      na.omit() %>%
+      unique() %>%
+      paste(collapse = ';')
+    if(reason == ''){ reason <- NA_character_ }
   }
   
   return(list(status, reason))
@@ -129,12 +129,12 @@ df <- df %>%
 # QC status
 df <- df %>%
   group_by(ID,REFERENCE) %>%
-  mutate (ASSEMBLY_QC = unlist(qcCheck(REFERENCE,ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[1]),
-          ASSEMBLY_QC_REASON = unlist(qcCheck(REFERENCE,ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)[2])) %>%
+  mutate(ASSEMBLY_QC = list(qcCheck(REFERENCE,ASSEMBLY_GEN_FRAC,min_genfrac,ASSEMBLY_EST_DEPTH,min_depth)),
+         ASSEMBLY_QC_REASON = unlist(ASSEMBLY_QC)[2],
+         ASSEMBLY_QC = unlist(ASSEMBLY_QC)[1]) %>%
   ungroup() %>%
   select(-any_of(c('ASSEMBLY_NC')))
 # summarize assembly variants
-df
 df <- df %>%
   group_by(ID,SPECIES,SEGMENT) %>%
   mutate(ASSEMBLY_VARIANT = case_when( !is.na(SPECIES) ~ paste0(row_number()," of ", n()),

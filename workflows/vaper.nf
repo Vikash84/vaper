@@ -269,8 +269,21 @@ workflow.onComplete {
     if (params.hook_url) {
         NfcoreTemplate.IM_notification(workflow, params, summary_params, projectDir, log)
     }
+
+    // animalFacts()
 }
 
+// Random fact bot
+def animalFacts(){
+    try {    
+        def facts = file("https://github.com/ekohrt/animal-fun-facts-dataset/raw/refs/heads/main/animal-fun-facts-dataset.csv").splitCsv(header: true)
+        randomFact = facts[new Random().nextInt(facts.size())]
+        factMessage = "[${randomFact.animal_name}] ${randomFact.text.replaceAll('"','')} (source: ${randomFact.source})"
+    } catch (Exception e) {
+        factMessage = "No facts for you!"
+    }
+    println "Animal Fact: ${factMessage}"
+}
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     THE END
