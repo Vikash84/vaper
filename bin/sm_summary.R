@@ -78,8 +78,9 @@ if(nrow(df) > 0){
 
     # create summaryline
     summaryline <- df %>%
+      filter(Species != 'unclassified') %>%
       arrange(Species) %>%
-      mutate(virus = paste0(round(100*fraction, digits =1),"% ", Species)) %>%
+      mutate(virus = paste0(round(100*classified_fraction, digits =1),"% ", Species)) %>%
       .$virus %>%
       paste(collapse = "; ") %>%
       gsub(pattern = ",", replacement = "")
