@@ -1,6 +1,6 @@
 # VAPER: Viral Assembly from Probe-based EnRichment
 > [!IMPORTANT]
-> VAPER is currently in beta. Version 1.0 will be released once VAPER has been officially validated (wich should be very soon! 🙂)
+> VAPER is currently in beta. Version 1.0 will be released once VAPER has been officially validated (which should be very soon! 🙂)
 
 ## Overview
 VAPER is a viral (meta-)genome assembly pipeline.
@@ -65,9 +65,15 @@ nextflow run DOH-JDJ0303/VAPER \
     --max_cpus 8 \
     --max_memory 16.GB
 ```
+### Step 3: Check out the results
+- **Run summary:** `${outdir}/VAPER-summary.csv`
+- **Assemblies:** `${outdir}/${sample}/assembly/`
+
+Learn about all the VAPER outputs [here](https://github.com/DOH-JDJ0303/vaper/wiki/9.-Outputs).
+
 ## Acknowledgements
 **VAPER would not be possible without the following people:**
-- Holly Halstead (WA PHL) (check out her tool [varcraft](https://github.com/DOH-HNH0303/varcraft)!)
+- Holly Halstead (WA PHL)
 - Pauline Trinh (WA MEP)
 - Allison Black (WA MEP)
 - Stephanie Lunn (WA MEP)
