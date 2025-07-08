@@ -3,8 +3,6 @@
 </p>
 
 # VAPER: Viral Assembly from Probe-based EnRichment
-> [!IMPORTANT]
-> VAPER is currently in beta. Version 1.0 will be released once VAPER has been officially validated (which should be very soon! 🙂)
 
 ## Key Features
 VAPER is a viral (meta-)assembly pipeline that can:
