@@ -2,7 +2,7 @@
 // Check input samplesheet and get read channels
 //
 
-include { BWA_MEM        } from '../../modules/local/bwa_mem'
+include { BWA_MEM        } from '../../modules/local/minimap2_align'
 include { IVAR_CONSENSUS } from '../../modules/local/ivar_consensus'
 include { IRMA           } from '../../modules/local/irma'
 include { CONDENSE       } from '../../modules/local/condense'
